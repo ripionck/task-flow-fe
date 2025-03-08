@@ -1,4 +1,5 @@
-import { useState } from 'react';
+import { useCallback, useState } from 'react';
+import { useNavigate } from 'react-router-dom';
 import BoardsView from '../components/boards-view';
 import CalendarView from '../components/calendar-view';
 import DashboardView from '../components/dashboard-view';
@@ -14,6 +15,13 @@ export default function Main() {
   const [currentView, setCurrentView] = useState('dashboard');
   const [isNewTaskModalOpen, setIsNewTaskModalOpen] = useState(false);
   const [isNewBoardModalOpen, setIsNewBoardModalOpen] = useState(false);
+  const navigate = useNavigate();
+
+  const handleLogout = useCallback(() => {
+    // Add your logout logic here (clear tokens, reset state, etc.)
+    console.log('User logged out');
+    navigate('/login'); // Redirect to login page
+  }, [navigate]);
 
   const handleCreateTask = (taskData) => {
     console.log('New Task:', taskData);
@@ -48,7 +56,11 @@ export default function Main() {
 
   return (
     <div className="flex h-screen bg-gray-50">
-      <Sidebar currentView={currentView} onViewChange={setCurrentView} />
+      <Sidebar
+        currentView={currentView}
+        onViewChange={setCurrentView}
+        onLogout={handleLogout}
+      />
       <main className="flex-1 overflow-y-auto">
         {renderView()}
 
