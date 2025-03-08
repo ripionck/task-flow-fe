@@ -1,6 +1,6 @@
+import { Calendar, X } from 'lucide-react';
+import PropTypes from 'prop-types';
 import { useState } from 'react';
-import { X, Calendar } from 'lucide-react';
-
 export default function NewTaskModal({ isOpen, onClose, onSubmit }) {
   const [taskData, setTaskData] = useState({
     title: '',
@@ -263,3 +263,9 @@ export default function NewTaskModal({ isOpen, onClose, onSubmit }) {
     </div>
   );
 }
+
+NewTaskModal.propTypes = {
+  isOpen: PropTypes.bool.isRequired,
+  onClose: PropTypes.func.isRequired,
+  onSubmit: PropTypes.func.isRequired,
+};

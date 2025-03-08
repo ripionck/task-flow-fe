@@ -18,9 +18,8 @@ export default function Main() {
   const navigate = useNavigate();
 
   const handleLogout = useCallback(() => {
-    // Add your logout logic here (clear tokens, reset state, etc.)
-    console.log('User logged out');
-    navigate('/login'); // Redirect to login page
+    localStorage.removeItem('token');
+    navigate('/login');
   }, [navigate]);
 
   const handleCreateTask = (taskData) => {

@@ -7,6 +7,7 @@ import {
   Settings,
   Users,
 } from 'lucide-react';
+import PropTypes from 'prop-types';
 import { useEffect, useRef, useState } from 'react';
 
 const navItems = [
@@ -20,9 +21,32 @@ const navItems = [
 ];
 
 export default function Sidebar({ currentView, onViewChange, onLogout }) {
+  const [userData, setUserData] = useState(null);
   const [isDropdownOpen, setIsDropdownOpen] = useState(false);
   const dropdownRef = useRef(null);
   const profileRef = useRef(null);
+
+  useEffect(() => {
+    const fetchUserData = async () => {
+      try {
+        const token = localStorage.getItem('token');
+        const response = await fetch('http://localhost:5000/api/auth/me', {
+          headers: {
+            Authorization: `Bearer ${token}`,
+          },
+        });
+
+        if (!response.ok) throw new Error('Failed to fetch user data');
+
+        const data = await response.json();
+        setUserData(data.data);
+      } catch (error) {
+        console.error('Error fetching user data:', error);
+      }
+    };
+
+    fetchUserData();
+  }, []);
 
   useEffect(() => {
     const handleClickOutside = (event) => {
@@ -38,6 +62,16 @@ export default function Sidebar({ currentView, onViewChange, onLogout }) {
     document.addEventListener('mousedown', handleClickOutside);
     return () => document.removeEventListener('mousedown', handleClickOutside);
   }, []);
+
+  const getInitials = (fullName) => {
+    if (!fullName) return 'US';
+    const names = fullName.split(' ');
+    if (names.length === 1) return names[0].slice(0, 2).toUpperCase();
+    return names
+      .slice(0, 2)
+      .map((name) => name[0].toUpperCase())
+      .join('');
+  };
 
   return (
     <aside className="w-60 border-r border-gray-200 bg-white flex flex-col h-screen">
@@ -71,12 +105,24 @@ export default function Sidebar({ currentView, onViewChange, onLogout }) {
           className="flex items-center gap-3 px-3 py-2 cursor-pointer"
           onClick={() => setIsDropdownOpen((prev) => !prev)}
         >
-          <div className="w-8 h-8 bg-blue-600 rounded-full flex items-center justify-center text-white text-sm">
-            JD
-          </div>
+          {userData?.avatar ? (
+            <img
+              src={userData.avatar}
+              alt="Profile"
+              className="w-8 h-8 rounded-full object-cover"
+            />
+          ) : (
+            <div className="w-8 h-8 bg-blue-600 rounded-full flex items-center justify-center text-white text-sm">
+              {getInitials(userData?.fullName)}
+            </div>
+          )}
           <div className="flex-1">
-            <div className="text-sm font-medium">John Doe</div>
-            <div className="text-xs text-gray-500">john@example.com</div>
+            <div className="text-sm font-medium truncate">
+              {userData?.fullName || 'Loading...'}
+            </div>
+            <div className="text-xs text-gray-500 truncate">
+              {userData?.email || 'Loading...'}
+            </div>
           </div>
         </div>
 
@@ -102,3 +148,9 @@ export default function Sidebar({ currentView, onViewChange, onLogout }) {
     </aside>
   );
 }
+
+Sidebar.propTypes = {
+  currentView: PropTypes.string.isRequired,
+  onViewChange: PropTypes.func.isRequired,
+  onLogout: PropTypes.func.isRequired,
+};

@@ -6,13 +6,40 @@ export default function Login() {
     email: '',
     password: '',
   });
+  const [error, setError] = useState('');
+  const [isSubmitting, setIsSubmitting] = useState(false);
   const navigate = useNavigate();
 
-  const handleSubmit = (e) => {
+  const handleSubmit = async (e) => {
     e.preventDefault();
-    // Mock login API call
-    console.log('Logging in:', formData);
-    navigate('/');
+    setError('');
+    setIsSubmitting(true);
+
+    try {
+      const response = await fetch('http://localhost:5000/api/auth/login', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify(formData),
+      });
+
+      const data = await response.json();
+
+      if (!response.ok) {
+        throw new Error(data.message || 'Login failed');
+      }
+
+      // Store the authentication token (assuming your API returns one)
+      localStorage.setItem('token', data.token);
+
+      // Redirect to home page
+      navigate('/');
+    } catch (err) {
+      setError(err.message);
+    } finally {
+      setIsSubmitting(false);
+    }
   };
 
   return (
@@ -20,6 +47,11 @@ export default function Login() {
       <div className="bg-white p-8 rounded-lg shadow-md w-96">
         <h2 className="text-2xl font-bold mb-6 text-center">Login</h2>
         <form onSubmit={handleSubmit}>
+          {error && (
+            <div className="mb-4 p-2 bg-red-100 text-red-700 rounded-md">
+              {error}
+            </div>
+          )}
           <div className="mb-4">
             <label className="block text-gray-700 mb-2" htmlFor="email">
               Email
@@ -48,13 +80,15 @@ export default function Login() {
               }
               className="w-full px-3 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
               required
+              minLength="6"
             />
           </div>
           <button
             type="submit"
-            className="w-full bg-blue-500 text-white py-2 px-4 rounded-lg hover:bg-blue-600 transition duration-200"
+            disabled={isSubmitting}
+            className="w-full bg-blue-500 text-white py-2 px-4 rounded-lg hover:bg-blue-600 transition duration-200 disabled:bg-gray-400 disabled:cursor-not-allowed"
           >
-            Login
+            {isSubmitting ? 'Logging in...' : 'Login'}
           </button>
         </form>
 
@@ -65,12 +99,6 @@ export default function Login() {
               Register
             </Link>
           </div>
-        </div>
-
-        <div className="mt-6 flex items-center">
-          <div className="flex-grow h-px bg-gray-300"></div>
-          <span className="mx-4 text-gray-500">Or continue with</span>
-          <div className="flex-grow h-px bg-gray-300"></div>
         </div>
 
         <div className="mt-4 flex justify-center space-x-4">
