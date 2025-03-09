@@ -1,5 +1,6 @@
-import { useCallback, useState } from 'react';
+import { useCallback, useEffect, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
+import BoardDetailView from '../components/board-detail-view';
 import BoardsView from '../components/boards-view';
 import CalendarView from '../components/calendar-view';
 import DashboardView from '../components/dashboard-view';
@@ -11,14 +12,45 @@ import SettingsView from '../components/settings-view';
 import Sidebar from '../components/sidebar';
 import TeamSpaceView from '../components/team-space-view';
 
+// List of valid view IDs (excluding boardDetail)
+const validViews = [
+  'dashboard',
+  'boards',
+  'calendar',
+  'settings',
+  'team',
+  'notifications',
+  'reports',
+];
+
 export default function Main() {
-  const [currentView, setCurrentView] = useState('dashboard');
+  const navigate = useNavigate();
+  const [currentView, setCurrentView] = useState(() => {
+    const storedView = localStorage.getItem('currentView');
+    return validViews.includes(storedView) ? storedView : 'dashboard';
+  });
   const [isNewTaskModalOpen, setIsNewTaskModalOpen] = useState(false);
   const [isNewBoardModalOpen, setIsNewBoardModalOpen] = useState(false);
-  const navigate = useNavigate();
+  const [selectedBoardId, setSelectedBoardId] = useState(null);
+
+  // Persist only valid views to localStorage
+  useEffect(() => {
+    if (validViews.includes(currentView)) {
+      localStorage.setItem('currentView', currentView);
+    }
+  }, [currentView]);
+
+  // Route protection
+  useEffect(() => {
+    const token = localStorage.getItem('token');
+    if (!token) {
+      navigate('/login');
+    }
+  }, [navigate]);
 
   const handleLogout = useCallback(() => {
     localStorage.removeItem('token');
+    localStorage.removeItem('currentView');
     navigate('/login');
   }, [navigate]);
 
@@ -32,12 +64,37 @@ export default function Main() {
     // Handle board creation logic here
   };
 
+  const handleViewChange = (newView) => {
+    if (validViews.includes(newView)) {
+      setCurrentView(newView);
+    } else {
+      setCurrentView('dashboard');
+    }
+  };
+
+  const handleBoardSelect = (boardId) => {
+    setSelectedBoardId(boardId);
+    setCurrentView('boardDetail');
+  };
+
   const renderView = () => {
     switch (currentView) {
       case 'dashboard':
         return <DashboardView onNewTask={() => setIsNewTaskModalOpen(true)} />;
       case 'boards':
-        return <BoardsView onNewBoard={() => setIsNewBoardModalOpen(true)} />;
+        return (
+          <BoardsView
+            onNewBoard={() => setIsNewBoardModalOpen(true)}
+            onBoardSelect={handleBoardSelect}
+          />
+        );
+      case 'boardDetail':
+        return (
+          <BoardDetailView
+            onNewTask={() => setIsNewTaskModalOpen(true)}
+            boardId={selectedBoardId}
+          />
+        );
       case 'calendar':
         return <CalendarView />;
       case 'settings':
@@ -57,7 +114,7 @@ export default function Main() {
     <div className="flex h-screen bg-gray-50">
       <Sidebar
         currentView={currentView}
-        onViewChange={setCurrentView}
+        onViewChange={handleViewChange}
         onLogout={handleLogout}
       />
       <main className="flex-1 overflow-y-auto">

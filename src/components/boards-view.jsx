@@ -32,7 +32,7 @@ const projects = [
   },
 ];
 
-export default function BoardsView({ onNewBoard }) {
+export default function BoardsView({ onNewBoard, onBoardSelect }) {
   return (
     <div>
       <PageHeader
@@ -46,11 +46,17 @@ export default function BoardsView({ onNewBoard }) {
           {projects.map((project) => (
             <div
               key={project.id}
-              className="bg-white rounded-xl border border-gray-200 p-6"
+              className="bg-white rounded-xl border p-6 hover:shadow-md transition-shadow cursor-pointer"
+              onClick={() => onBoardSelect && onBoardSelect(project.id)}
             >
               <div className="flex justify-between items-start mb-4">
                 <h3 className="font-semibold text-lg">{project.title}</h3>
-                <button className="p-1 hover:bg-gray-100 rounded">
+                <button
+                  className="p-1 hover:bg-gray-100 rounded"
+                  onClick={(e) => {
+                    e.stopPropagation();
+                  }}
+                >
                   <MoreVertical className="h-5 w-5 text-gray-500" />
                 </button>
               </div>

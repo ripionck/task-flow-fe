@@ -1,12 +1,17 @@
 import { Calendar, X } from 'lucide-react';
-import PropTypes from 'prop-types';
 import { useState } from 'react';
-export default function NewTaskModal({ isOpen, onClose, onSubmit }) {
+
+export default function NewTaskModal({
+  isOpen,
+  onClose,
+  onSubmit,
+  preSelectedStatus = 'todo',
+}) {
   const [taskData, setTaskData] = useState({
     title: '',
     description: '',
     dueDate: '',
-    status: 'todo',
+    status: preSelectedStatus,
     priority: 'medium',
     assignees: [],
     tags: [],
@@ -44,8 +49,8 @@ export default function NewTaskModal({ isOpen, onClose, onSubmit }) {
   if (!isOpen) return null;
 
   return (
-    <div className="fixed inset-0 bg-gray-50 bg-opacity-50 flex items-center justify-center z-50">
-      <div className="bg-white rounded-lg w-full max-w-lg p-6 max-h-[90vh] overflow-y-auto">
+    <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
+      <div className="bg-white rounded-lg w-full max-w-md p-6 max-h-[90vh] overflow-y-auto">
         <div className="flex justify-between items-center mb-6">
           <h2 className="text-xl font-semibold">Create New Task</h2>
           <button
@@ -263,9 +268,3 @@ export default function NewTaskModal({ isOpen, onClose, onSubmit }) {
     </div>
   );
 }
-
-NewTaskModal.propTypes = {
-  isOpen: PropTypes.bool.isRequired,
-  onClose: PropTypes.func.isRequired,
-  onSubmit: PropTypes.func.isRequired,
-};
