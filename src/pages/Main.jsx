@@ -3,6 +3,7 @@ import { useNavigate } from 'react-router-dom';
 import BoardDetailView from '../components/board-detail-view';
 import BoardsView from '../components/boards-view';
 import CalendarView from '../components/calendar-view';
+import ChatButton from '../components/chat-button';
 import DashboardView from '../components/dashboard-view';
 import NewBoardModal from '../components/new-board-modal';
 import NewTaskModal from '../components/new-task-modal';
@@ -131,6 +132,8 @@ export default function Main() {
           onClose={() => setIsNewBoardModalOpen(false)}
           onSubmit={handleCreateBoard}
         />
+
+        <ChatButton />
       </main>
     </div>
   );

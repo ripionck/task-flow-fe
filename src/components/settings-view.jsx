@@ -100,12 +100,12 @@ export default function SettingsView() {
   }
 
   return (
-    <div className="min-h-screen max-w-3xl mx-auto p-4">
+    <div>
       <PageHeader
         title="Settings"
         subtitle="Manage your account and preferences"
       />
-      <div className="p-6">
+      <div className="min-h-screen max-w-5xl mx-auto p-6">
         <form onSubmit={handleSubmit} className="space-y-8">
           {error && (
             <div className="p-3 bg-red-100 text-red-700 rounded-lg">
@@ -155,7 +155,7 @@ export default function SettingsView() {
                       fullName: e.target.value,
                     }))
                   }
-                  className="w-full px-3 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
+                  className="w-full px-3 py-2 border border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
                 />
               </div>
               <div>
@@ -171,7 +171,7 @@ export default function SettingsView() {
                       email: e.target.value,
                     }))
                   }
-                  className="w-full px-3 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
+                  className="w-full px-3 py-2 border border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
                 />
               </div>
             </div>
@@ -253,7 +253,7 @@ export default function SettingsView() {
                       },
                     }))
                   }
-                  className="w-full px-3 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
+                  className="w-full px-3 py-2 border border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
                 >
                   <option value="light">Light</option>
                   <option value="dark">Dark</option>

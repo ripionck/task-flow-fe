@@ -1,5 +1,5 @@
+import { Check, ChevronDown, X } from 'lucide-react';
 import { useState } from 'react';
-import { X, ChevronDown } from 'lucide-react';
 import { PageHeader } from './page-header';
 
 const notifications = [
@@ -15,6 +15,7 @@ const notifications = [
         time: '2 hours ago',
         action: { text: 'View task', link: '#' },
         bgColor: 'bg-blue-50',
+        read: false,
       },
       {
         id: 2,
@@ -24,6 +25,7 @@ const notifications = [
         time: '30 minutes ago',
         action: { text: 'View deadline', link: '#' },
         bgColor: 'bg-yellow-50',
+        read: false,
       },
     ],
   },
@@ -38,6 +40,7 @@ const notifications = [
         content: 'completed task "User authentication"',
         time: 'Yesterday at 4:30 PM',
         bgColor: 'bg-white',
+        read: false,
       },
       {
         id: 4,
@@ -48,22 +51,75 @@ const notifications = [
           '"I\'ve identified the issue with the drag functionality. Will push the fix today."',
         time: 'Yesterday at 2:15 PM',
         bgColor: 'bg-white',
+        read: true,
+      },
+      {
+        id: 5,
+        type: 'mention',
+        user: { initials: 'RJ', color: 'bg-red-600', name: 'Robert Johnson' },
+        content: 'mentioned you in a comment on "Homepage redesign"',
+        comment:
+          '"@John what do you think about changing the hero section layout?"',
+        time: 'Yesterday at 11:45 AM',
+        bgColor: 'bg-white',
+        read: true,
       },
     ],
   },
 ];
 
+// Calculate total unread notifications
+const getUnreadCount = () => {
+  return notifications.reduce((count, group) => {
+    return count + group.items.filter((item) => !item.read).length;
+  }, 0);
+};
+
 export default function NotificationsView() {
   const [filter, setFilter] = useState('all');
+  const [notificationGroups, setNotificationGroups] = useState(notifications);
+
+  const markAllAsRead = () => {
+    const updatedGroups = notificationGroups.map((group) => ({
+      ...group,
+      items: group.items.map((item) => ({
+        ...item,
+        read: true,
+      })),
+    }));
+    setNotificationGroups(updatedGroups);
+  };
+
+  const markAsRead = (groupId, itemId) => {
+    const updatedGroups = notificationGroups.map((group) => {
+      if (group.id === groupId) {
+        return {
+          ...group,
+          items: group.items.map((item) => {
+            if (item.id === itemId) {
+              return { ...item, read: true };
+            }
+            return item;
+          }),
+        };
+      }
+      return group;
+    });
+    setNotificationGroups(updatedGroups);
+  };
 
   return (
-    <div className="min-h-screen max-w-3xl mx-auto p-4">
+    <div>
       <PageHeader
         title="Notifications"
         subtitle="Stay updated with your team's activities"
       >
         <div className="flex items-center gap-4">
-          <button className="text-gray-600 hover:text-gray-900">
+          <button
+            onClick={markAllAsRead}
+            className="flex items-center gap-1 text-gray-600 hover:text-gray-900"
+          >
+            <Check className="h-4 w-4" />
             Mark all as read
           </button>
           <div className="relative">
@@ -74,9 +130,9 @@ export default function NotificationsView() {
           </div>
         </div>
       </PageHeader>
-      <div className="p-6">
+      <div className="min-h-screen max-w-5xl mx-auto p-6">
         <div className="space-y-8">
-          {notifications.map((group) => (
+          {notificationGroups.map((group) => (
             <div key={group.id}>
               <h2 className="text-sm font-medium text-gray-600 mb-4">
                 {group.group}
@@ -85,7 +141,12 @@ export default function NotificationsView() {
                 {group.items.map((notification) => (
                   <div
                     key={notification.id}
-                    className={`p-4 rounded-lg ${notification.bgColor} relative group`}
+                    className={`p-4 rounded-lg ${
+                      notification.bgColor
+                    } relative group ${
+                      !notification.read ? 'border-l-4 border-l-blue-500' : ''
+                    }`}
+                    onClick={() => markAsRead(group.id, notification.id)}
                   >
                     <button className="absolute right-4 top-4 text-gray-400 hover:text-gray-600 opacity-0 group-hover:opacity-100 transition-opacity">
                       <X className="h-4 w-4" />

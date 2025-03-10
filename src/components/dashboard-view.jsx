@@ -5,7 +5,6 @@ import {
   ClipboardList,
   Clock,
   Filter,
-  Plus,
 } from 'lucide-react';
 import { PageHeader } from './page-header';
 
@@ -121,7 +120,7 @@ function TaskColumn({ title, tasks, count, onAddTask }) {
         {tasks.map((task) => (
           <div
             key={task.id}
-            className="bg-white p-4 rounded-lg border shadow-sm hover:shadow-md transition-shadow cursor-pointer"
+            className="bg-white p-4 rounded-lg border border-gray-200 shadow-sm hover:shadow-md transition-shadow cursor-pointer"
           >
             <div className="flex justify-between items-start mb-2">
               <span
@@ -138,7 +137,7 @@ function TaskColumn({ title, tasks, count, onAddTask }) {
                 {task.assignees.map((initials, i) => (
                   <div
                     key={i}
-                    className="w-8 h-8 rounded-full bg-blue-600 flex items-center justify-center text-white text-sm border-2 border-white"
+                    className="w-8 h-8 rounded-full bg-blue-600 flex items-center justify-center text-white text-sm border-2  border-gray-200"
                   >
                     {initials}
                   </div>
@@ -163,13 +162,6 @@ function TaskColumn({ title, tasks, count, onAddTask }) {
             </div>
           </div>
         ))}
-        <button
-          onClick={() => onAddTask && onAddTask()}
-          className="w-full py-2 border border-dashed border-gray-300 rounded-lg text-gray-500 hover:text-gray-700 hover:bg-gray-50 hover:border-gray-400 flex items-center justify-center transition-colors"
-        >
-          <Plus className="h-4 w-4 mr-2" />
-          Add Task
-        </button>
       </div>
     </div>
   );
@@ -181,9 +173,7 @@ export default function DashboardView({ onNewTask }) {
       <PageHeader
         title="Dashboard Overview"
         subtitle="Track and manage your tasks"
-      >
-        {/* Header is now clean with no controls */}
-      </PageHeader>
+      ></PageHeader>
 
       <div className="p-6">
         {/* Stats Section */}
@@ -191,7 +181,7 @@ export default function DashboardView({ onNewTask }) {
           {stats.map((stat, i) => (
             <div
               key={i}
-              className="bg-white p-6 rounded-xl border hover:shadow-md transition-shadow"
+              className="bg-white p-6 rounded-xl border border-gray-200 hover:shadow-md transition-shadow"
             >
               <div className="flex items-center gap-4">
                 <div className={`p-2 rounded-lg ${stat.color}`}>
@@ -214,7 +204,7 @@ export default function DashboardView({ onNewTask }) {
               <input
                 type="text"
                 placeholder="Search tasks..."
-                className="pl-10 pr-4 py-2 border rounded-lg w-64 focus:outline-none focus:ring-2 focus:ring-blue-500"
+                className="pl-10 pr-4 py-2 border border-gray-200 rounded-lg w-64 focus:outline-none focus:ring-2 focus:ring-blue-500"
               />
               <svg
                 className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 h-4 w-4"
@@ -230,12 +220,12 @@ export default function DashboardView({ onNewTask }) {
                 <line x1="21" y1="21" x2="16.65" y2="16.65" />
               </svg>
             </div>
-            <button className="flex items-center gap-2 px-3 py-2 border rounded-lg text-gray-600 hover:bg-gray-50">
+            <button className="flex items-center gap-2 px-3 py-2 border border-gray-200 rounded-lg text-gray-600 hover:bg-gray-50">
               <Filter className="h-4 w-4" />
               Filter
               <ChevronDown className="h-4 w-4" />
             </button>
-            <select className="px-3 py-2 border rounded-lg text-gray-600 focus:outline-none focus:ring-2 focus:ring-blue-500">
+            <select className="px-3 py-2 border border-gray-200 rounded-lg text-gray-600 focus:outline-none focus:ring-2 focus:ring-blue-500">
               <option>All Projects</option>
               <option>Website Redesign</option>
               <option>Mobile App</option>
