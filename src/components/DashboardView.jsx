@@ -6,7 +6,7 @@ import {
   Clock,
   Filter,
 } from 'lucide-react';
-import { PageHeader } from './page-header';
+import { PageHeader } from './PageHeader';
 
 const stats = [
   {

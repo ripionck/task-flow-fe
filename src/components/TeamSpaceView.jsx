@@ -9,7 +9,7 @@ import {
   X,
 } from 'lucide-react';
 import { useState } from 'react';
-import { PageHeader } from './page-header';
+import { PageHeader } from './PageHeader';
 
 const stats = [
   {
@@ -46,7 +46,7 @@ const allUsers = [
     isAdmin: true,
   },
   {
-    id: 2,
+    _id: 2,
     name: 'Alice Martinez',
     email: 'alice@example.com',
     role: 'Lead Developer',
@@ -170,16 +170,6 @@ export default function TeamSpaceView() {
             className="px-4 py-2 border border-gray-200 rounded-lg text-gray-700 hover:bg-gray-50"
           >
             {viewMode === 'team' ? 'View All Users' : 'View Team Members'}
-          </button>
-          <button
-            onClick={() => {
-              setSelectedUser(null);
-              setShowAddUserModal(true);
-            }}
-            className="flex items-center gap-2 bg-blue-600 text-white px-4 py-2 rounded-lg hover:bg-blue-700"
-          >
-            <UserPlus className="h-4 w-4" />
-            Add New User
           </button>
         </div>
       </PageHeader>

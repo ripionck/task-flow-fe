@@ -1,5 +1,5 @@
 import { useEffect, useState } from 'react';
-import { PageHeader } from './page-header';
+import { PageHeader } from './PageHeader';
 
 export default function SettingsView() {
   const [userData, setUserData] = useState({

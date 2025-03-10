@@ -1,17 +1,17 @@
 import { useCallback, useEffect, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
-import BoardDetailView from '../components/board-detail-view';
-import BoardsView from '../components/boards-view';
-import CalendarView from '../components/calendar-view';
-import ChatButton from '../components/chat-button';
-import DashboardView from '../components/dashboard-view';
-import NewBoardModal from '../components/new-board-modal';
-import NewTaskModal from '../components/new-task-modal';
-import NotificationsView from '../components/notifications-view';
-import ReportsView from '../components/reports-view';
-import SettingsView from '../components/settings-view';
-import Sidebar from '../components/sidebar';
-import TeamSpaceView from '../components/team-space-view';
+import BoardDetailView from '../components/BoardDetailView';
+import BoardsView from '../components/BoardsView';
+import CalendarView from '../components/CalendarView';
+import ChatButton from '../components/ChatButton';
+import DashboardView from '../components/DashboardView';
+import NewBoardModal from '../components/NewBoardModal';
+import NewTaskModal from '../components/NewTaskModal';
+import NotificationsView from '../components/NotificationsView';
+import ReportsView from '../components/ReportsView';
+import SettingsView from '../components/SettingsView';
+import Sidebar from '../components/Sidebar';
+import TeamSpaceView from '../components/TeamSpaceView';
 
 // List of valid view IDs (excluding boardDetail)
 const validViews = [

@@ -11,6 +11,7 @@ import {
 } from 'lucide-react';
 import { useState } from 'react';
 
+// Sample board data
 const boardData = {
   id: 1,
   title: 'Website Redesign',

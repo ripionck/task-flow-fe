@@ -1,6 +1,6 @@
 import { Check, ChevronDown, X } from 'lucide-react';
 import { useState } from 'react';
-import { PageHeader } from './page-header';
+import { PageHeader } from './PageHeader';
 
 const notifications = [
   {

@@ -10,8 +10,10 @@ import {
   X,
 } from 'lucide-react';
 import { useEffect, useRef, useState } from 'react';
-import { NavButtons } from './nav-buttons';
-import { PageHeader } from './page-header';
+import EditBoardModal from './EditBoardModal';
+import { NavButtons } from './NavButtons';
+import NewBoardModal from './NewBoardModal';
+import { PageHeader } from './PageHeader';
 
 const projects = [
   {
@@ -70,10 +72,11 @@ const projects = [
   },
 ];
 
-export default function BoardsView({ onNewBoard, onBoardSelect }) {
+export default function BoardsView({ onBoardSelect }) {
   const [selectedBoardDetails, setSelectedBoardDetails] = useState(null);
   const [boardToEdit, setBoardToEdit] = useState(null);
   const [boardToDelete, setBoardToDelete] = useState(null);
+  const [isNewBoardOpen, setIsNewBoardOpen] = useState(false);
   const [openMenuId, setOpenMenuId] = useState(null);
   const menuRef = useRef(null);
 
@@ -92,7 +95,7 @@ export default function BoardsView({ onNewBoard, onBoardSelect }) {
   }, []);
 
   const handleShowDetails = (e, project) => {
-    e.stopPropagation(); // Prevent triggering the card click
+    e.stopPropagation();
     setSelectedBoardDetails(project);
   };
 
@@ -101,31 +104,48 @@ export default function BoardsView({ onNewBoard, onBoardSelect }) {
   };
 
   const toggleMenu = (e, projectId) => {
-    e.stopPropagation(); // Prevent triggering the card click
+    e.stopPropagation();
     setOpenMenuId(openMenuId === projectId ? null : projectId);
   };
 
   const handleEditBoard = (e, project) => {
-    e.stopPropagation(); // Prevent triggering the card click
+    e.stopPropagation();
     setOpenMenuId(null);
     setBoardToEdit(project);
   };
 
   const handleDeleteBoard = (e, project) => {
-    e.stopPropagation(); // Prevent triggering the card click
+    e.stopPropagation();
     setOpenMenuId(null);
     setBoardToDelete(project);
   };
 
   const handleSaveEdit = (updatedBoard) => {
-    // Here you would update the board in your data store
-    console.log('Saving updated board:', updatedBoard);
+    const index = projects.findIndex((p) => p.id === updatedBoard.id);
+    if (index !== -1) {
+      projects[index] = updatedBoard;
+    }
     setBoardToEdit(null);
   };
 
+  const handleCreateBoard = (newBoard) => {
+    projects.push({
+      ...newBoard,
+      id: Math.max(...projects.map((p) => p.id)) + 1,
+      progress: 0,
+      createdAt: new Date().toISOString().split('T')[0],
+      lastUpdated: new Date().toISOString().split('T')[0],
+      totalTasks: 0,
+      completedTasks: 0,
+    });
+    setIsNewBoardOpen(false);
+  };
+
   const handleConfirmDelete = (boardId) => {
-    // Here you would delete the board from your data store
-    console.log('Deleting board with ID:', boardId);
+    const index = projects.findIndex((p) => p.id === boardId);
+    if (index !== -1) {
+      projects.splice(index, 1);
+    }
     setBoardToDelete(null);
   };
 
@@ -135,14 +155,15 @@ export default function BoardsView({ onNewBoard, onBoardSelect }) {
         title="Project Boards"
         subtitle="Manage and organize your team's tasks"
       >
-        <NavButtons onNewBoard={onNewBoard} />
+        <NavButtons onNewBoard={() => setIsNewBoardOpen(true)} />
       </PageHeader>
+
       <div className="p-6">
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
           {projects.map((project) => (
             <div
               key={project.id}
-              className="bg-white rounded-xl border border-gray-200 p-6 hover:shadow-md transition-shadow cursor-pointer relative"
+              className="bg-white rounded-xl border p-6 hover:shadow-md transition-shadow cursor-pointer relative"
               onClick={() => onBoardSelect && onBoardSelect(project.id)}
             >
               <div className="flex justify-between items-start mb-4">
@@ -166,7 +187,6 @@ export default function BoardsView({ onNewBoard, onBoardSelect }) {
                       <MoreVertical className="h-5 w-5 text-gray-500" />
                     </button>
 
-                    {/* Dropdown Menu */}
                     {openMenuId === project.id && (
                       <div className="absolute right-0 mt-1 w-36 bg-white rounded-md shadow-lg z-10 border">
                         <div className="py-1">
@@ -390,159 +410,19 @@ export default function BoardsView({ onNewBoard, onBoardSelect }) {
         </div>
       )}
 
-      {/* Edit Board Modal */}
-      {boardToEdit && (
-        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4">
-          <div className="bg-white rounded-lg w-full max-w-2xl max-h-[90vh] overflow-y-auto">
-            <div className="p-6 border-b">
-              <div className="flex justify-between items-center">
-                <h2 className="text-xl font-semibold">Edit Board</h2>
-                <button
-                  onClick={() => setBoardToEdit(null)}
-                  className="p-2 hover:bg-gray-100 rounded-full"
-                >
-                  <X className="h-5 w-5" />
-                </button>
-              </div>
-            </div>
+      <EditBoardModal
+        isOpen={!!boardToEdit}
+        onClose={() => setBoardToEdit(null)}
+        board={boardToEdit}
+        onSave={handleSaveEdit}
+      />
 
-            <div className="p-6">
-              <form className="space-y-6">
-                {/* Title */}
-                <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-1">
-                    Board Title
-                  </label>
-                  <input
-                    type="text"
-                    defaultValue={boardToEdit.title}
-                    className="w-full px-3 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
-                  />
-                </div>
+      <NewBoardModal
+        isOpen={isNewBoardOpen}
+        onClose={() => setIsNewBoardOpen(false)}
+        onCreate={handleCreateBoard}
+      />
 
-                {/* Description */}
-                <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-1">
-                    Description
-                  </label>
-                  <textarea
-                    defaultValue={boardToEdit.description}
-                    rows={4}
-                    className="w-full px-3 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
-                  />
-                </div>
-
-                {/* Tags */}
-                <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-1">
-                    Tags
-                  </label>
-                  <div className="flex flex-wrap gap-2 mb-2">
-                    {boardToEdit.tags.map((tag, i) => (
-                      <div
-                        key={i}
-                        className={`flex items-center gap-1 px-3 py-1 rounded-full ${boardToEdit.tagColors[i]}`}
-                      >
-                        {tag}
-                        <button
-                          type="button"
-                          className="text-gray-500 hover:text-gray-700"
-                        >
-                          <X className="h-3 w-3" />
-                        </button>
-                      </div>
-                    ))}
-                    <div className="flex items-center">
-                      <input
-                        type="text"
-                        placeholder="Add tag"
-                        className="px-3 py-1 border rounded-full text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
-                      />
-                      <button
-                        type="button"
-                        className="ml-2 text-blue-600 hover:text-blue-700 text-sm"
-                      >
-                        Add
-                      </button>
-                    </div>
-                  </div>
-                </div>
-
-                {/* Due Date */}
-                <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-1">
-                    Due Date
-                  </label>
-                  <input
-                    type="date"
-                    defaultValue={boardToEdit.dueDate}
-                    className="w-full px-3 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
-                  />
-                </div>
-
-                {/* Team Members */}
-                <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-1">
-                    Team Members
-                  </label>
-                  <div className="space-y-2 mb-3">
-                    {boardToEdit.teamNames.map((name, i) => (
-                      <div
-                        key={i}
-                        className="flex items-center justify-between"
-                      >
-                        <div className="flex items-center gap-3">
-                          <div className="w-8 h-8 rounded-full bg-blue-600 flex items-center justify-center text-white text-sm">
-                            {boardToEdit.team[i]}
-                          </div>
-                          <span className="text-sm">{name}</span>
-                        </div>
-                        <button
-                          type="button"
-                          className="text-gray-500 hover:text-gray-700"
-                        >
-                          <X className="h-4 w-4" />
-                        </button>
-                      </div>
-                    ))}
-                  </div>
-                  <div className="flex gap-2">
-                    <select className="flex-1 px-3 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500">
-                      <option value="">Add team member</option>
-                      <option value="user1">David Wilson</option>
-                      <option value="user2">Emma Thompson</option>
-                      <option value="user3">James Brown</option>
-                    </select>
-                    <button
-                      type="button"
-                      className="px-4 py-2 bg-gray-100 hover:bg-gray-200 rounded-lg"
-                    >
-                      Add
-                    </button>
-                  </div>
-                </div>
-              </form>
-            </div>
-
-            <div className="p-4 border-t flex justify-end gap-3">
-              <button
-                onClick={() => setBoardToEdit(null)}
-                className="px-4 py-2 text-gray-700 hover:bg-gray-100 rounded-lg"
-              >
-                Cancel
-              </button>
-              <button
-                onClick={() => handleSaveEdit(boardToEdit)}
-                className="px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700"
-              >
-                Save Changes
-              </button>
-            </div>
-          </div>
-        </div>
-      )}
-
-      {/* Delete Confirmation Modal */}
       {boardToDelete && (
         <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4">
           <div className="bg-white rounded-lg w-full max-w-md">
@@ -556,9 +436,7 @@ export default function BoardsView({ onNewBoard, onBoardSelect }) {
 
               <p className="text-gray-600 mb-4">
                 Are you sure you want to delete{' '}
-                <span className="font-medium">{boardToDelete.title}</span>? This
-                action cannot be undone and all tasks associated with this board
-                will be permanently deleted.
+                <span className="font-medium">{boardToDelete.title}</span>?
               </p>
 
               <div className="flex justify-end gap-3 pt-4">

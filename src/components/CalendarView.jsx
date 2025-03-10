@@ -12,7 +12,7 @@ import {
 } from 'date-fns';
 import { ChevronLeft, ChevronRight } from 'lucide-react';
 import { useState } from 'react';
-import { PageHeader } from './page-header';
+import { PageHeader } from './PageHeader';
 
 const events = [
   { id: 1, title: 'Website Design Review', date: '2024-10-03', type: 'Design' },

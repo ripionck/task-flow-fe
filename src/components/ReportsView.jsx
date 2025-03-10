@@ -1,5 +1,4 @@
 import { ChevronDown, Download } from 'lucide-react';
-import { useState } from 'react';
 import {
   Bar,
   BarChart,
@@ -13,7 +12,7 @@ import {
   XAxis,
   YAxis,
 } from 'recharts';
-import { PageHeader } from './page-header';
+import { PageHeader } from './PageHeader';
 
 const metrics = [
   {
@@ -92,8 +91,6 @@ const memberPerformanceData = teamMembers.map((member) => ({
 }));
 
 export default function ReportsView() {
-  const [timeRange, setTimeRange] = useState('7d');
-
   // Custom label for pie chart
   const renderCustomizedLabel = ({
     cx,
@@ -102,7 +99,6 @@ export default function ReportsView() {
     innerRadius,
     outerRadius,
     percent,
-    index,
   }) => {
     const RADIAN = Math.PI / 180;
     const radius = innerRadius + (outerRadius - innerRadius) * 0.5;

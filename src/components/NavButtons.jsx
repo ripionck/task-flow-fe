@@ -1,5 +1,5 @@
 import { Plus } from 'lucide-react';
-import { SearchIcon } from './icons';
+import { SearchIcon } from './SearchIcon';
 
 export function NavButtons({ onNewTask, onNewBoard }) {
   return (
