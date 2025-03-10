@@ -39,10 +39,22 @@ export default function NewBoardModal({ isOpen, onClose, onCreate }) {
       setBoardData((prev) => ({
         ...prev,
         tags: [...prev.tags, tagInput.trim()],
-        tagColors: [...prev.tagColors, 'bg-gray-100 text-gray-700'],
+        tagColors: [
+          ...prev.tagColors,
+          { bg: '#f3f4f6', text: '#374151' }, // Default hex colors
+        ],
       }));
       setTagInput('');
     }
+  };
+
+  const updateTagColor = (index, type, value) => {
+    const newColors = [...boardData.tagColors];
+    newColors[index] = {
+      ...newColors[index],
+      [type]: value,
+    };
+    setBoardData((prev) => ({ ...prev, tagColors: newColors }));
   };
 
   if (!isOpen) return null;
@@ -106,9 +118,29 @@ export default function NewBoardModal({ isOpen, onClose, onCreate }) {
               {boardData.tags.map((tag, i) => (
                 <div
                   key={i}
-                  className={`flex items-center gap-1 px-3 py-1 rounded-full ${boardData.tagColors[i]}`}
+                  className="flex items-center gap-1 px-3 py-1 rounded-full"
+                  style={{
+                    backgroundColor: boardData.tagColors[i]?.bg,
+                    color: boardData.tagColors[i]?.text,
+                  }}
                 >
                   {tag}
+                  <div className="flex gap-1 ml-2">
+                    <input
+                      type="color"
+                      value={boardData.tagColors[i]?.bg || '#f3f4f6'}
+                      onChange={(e) => updateTagColor(i, 'bg', e.target.value)}
+                      className="w-6 h-6 rounded cursor-pointer"
+                    />
+                    <input
+                      type="color"
+                      value={boardData.tagColors[i]?.text || '#374151'}
+                      onChange={(e) =>
+                        updateTagColor(i, 'text', e.target.value)
+                      }
+                      className="w-6 h-6 rounded cursor-pointer"
+                    />
+                  </div>
                   <button
                     type="button"
                     onClick={() =>

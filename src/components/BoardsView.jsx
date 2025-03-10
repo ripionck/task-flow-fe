@@ -22,7 +22,10 @@ const projects = [
     description:
       'Complete overhaul of the company website with new branding and improved user experience.',
     tags: ['Design', 'Development'],
-    tagColors: ['bg-blue-100 text-blue-700', 'bg-purple-100 text-purple-700'],
+    tagColors: [
+      { bg: '#bfdbfe', text: '#1d4ed8' },
+      { bg: '#ede9fe', text: '#6b21a8' },
+    ],
     progress: 60,
     dueIn: '2 weeks',
     dueDate: '2023-11-15',
@@ -40,7 +43,10 @@ const projects = [
     description:
       'Q4 marketing campaign for product launch including social media, email, and content strategy.',
     tags: ['Marketing', 'Content'],
-    tagColors: ['bg-green-100 text-green-700', 'bg-yellow-100 text-yellow-700'],
+    tagColors: [
+      { bg: '#d1fae5', text: '#065f46' },
+      { bg: '#fef3c7', text: '#92400e' },
+    ],
     progress: 35,
     dueIn: '1 month',
     dueDate: '2023-12-01',
@@ -58,7 +64,10 @@ const projects = [
     description:
       'Preparation and execution of the new product launch, including feature finalization and go-to-market strategy.',
     tags: ['Product', 'Launch'],
-    tagColors: ['bg-blue-100 text-blue-700', 'bg-pink-100 text-pink-700'],
+    tagColors: [
+      { bg: '#bfdbfe', text: '#1d4ed8' },
+      { bg: '#fbcfe8', text: '#9d174d' },
+    ],
     progress: 15,
     dueIn: '3 months',
     dueDate: '2024-01-15',
@@ -216,14 +225,21 @@ export default function BoardsView({ onBoardSelect }) {
               </p>
 
               <div className="flex gap-2 mb-4">
-                {project.tags.map((tag, i) => (
-                  <span
-                    key={i}
-                    className={`text-xs px-2 py-1 rounded-full ${project.tagColors[i]}`}
-                  >
-                    {tag}
-                  </span>
-                ))}
+                {project.tags.map((tag, i) => {
+                  const tagColor = project.tagColors[i];
+                  return (
+                    <span
+                      key={i}
+                      className="text-xs px-2 py-1 rounded-full"
+                      style={{
+                        backgroundColor: tagColor?.bg || '#F3F4F6',
+                        color: tagColor?.text || '#374151',
+                      }}
+                    >
+                      {tag}
+                    </span>
+                  );
+                })}
               </div>
 
               <div className="mb-4">
@@ -301,20 +317,24 @@ export default function BoardsView({ onBoardSelect }) {
               </div>
 
               {/* Tags */}
-              <div>
-                <h3 className="text-sm font-medium text-gray-500 mb-2">Tags</h3>
-                <div className="flex gap-2">
-                  {selectedBoardDetails.tags.map((tag, i) => (
+              <div className="flex gap-2">
+                {selectedBoardDetails.tags.map((tag, i) => {
+                  const tagColor = selectedBoardDetails.tagColors[i];
+                  return (
                     <div key={i} className="flex items-center gap-1">
                       <Tag className="h-3 w-3" />
                       <span
-                        className={`text-sm px-2 py-1 rounded-full ${selectedBoardDetails.tagColors[i]}`}
+                        className="text-sm px-2 py-1 rounded-full"
+                        style={{
+                          backgroundColor: tagColor?.bg || '#F3F4F6',
+                          color: tagColor?.text || '#374151',
+                        }}
                       >
                         {tag}
                       </span>
                     </div>
-                  ))}
-                </div>
+                  );
+                })}
               </div>
 
               {/* Progress */}
