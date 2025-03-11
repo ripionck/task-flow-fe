@@ -1,11 +1,9 @@
-// CLIENT-SIDE FIX (ChatButton.jsx)
 import axios from 'axios';
 import { File, MessageSquare, Paperclip, Send, Users, X } from 'lucide-react';
 import { useCallback, useEffect, useRef, useState } from 'react';
 import io from 'socket.io-client';
 import { v4 as uuidv4 } from 'uuid';
 
-// Use environment variable or default to localhost with explicit protocol
 const SOCKET_URL = import.meta.env.VITE_API_URL || 'http://localhost:5000';
 
 // Set axios defaults
@@ -14,6 +12,7 @@ axios.defaults.baseURL = SOCKET_URL;
 export default function ChatButton() {
   const [isOpen, setIsOpen] = useState(false);
   const [unreadCount, setUnreadCount] = useState(0);
+  const [userUnreadCounts, setUserUnreadCounts] = useState({});
   const [message, setMessage] = useState('');
   const [messages, setMessages] = useState([]);
   const [filePreview, setFilePreview] = useState(null);
@@ -25,6 +24,7 @@ export default function ChatButton() {
   const socketRef = useRef(null);
   const messagesEndRef = useRef();
   const fileInputRef = useRef();
+  const visibleMessagesRef = useRef(new Set());
 
   // Socket connection and event handlers
   useEffect(() => {
@@ -81,7 +81,27 @@ export default function ChatButton() {
         return [...filteredMessages, { ...serverMessage, isCurrentUser }];
       });
 
-      if (!isOpen) setUnreadCount((prev) => prev + 1);
+      // Mark own messages as read immediately
+      if (isCurrentUser) {
+        markMessageAsRead(serverMessage._id);
+      } else if (!isOpen) {
+        setUnreadCount((prev) => prev + 1);
+      }
+    });
+
+    // Handle unread counts from server
+    socketRef.current.on('unread:counts', (counts) => {
+      console.log('Received unread counts:', counts);
+      setUserUnreadCounts(counts);
+
+      // Calculate total unread for our badge
+      const totalUnread = Object.values(counts).reduce(
+        (sum, count) => sum + count,
+        0,
+      );
+      if (!isOpen) {
+        setUnreadCount(totalUnread);
+      }
     });
 
     socketRef.current.on('comment:typing', ({ user }) => {
@@ -119,6 +139,11 @@ export default function ChatButton() {
       setError(errorData.message || 'An error occurred in the chat.');
     });
 
+    // Request unread counts on connection
+    if (socketRef.current) {
+      socketRef.current.emit('unread:request');
+    }
+
     // Cleanup on unmount or when dependency changes
     return () => {
       if (socketRef.current) {
@@ -127,7 +152,38 @@ export default function ChatButton() {
         socketRef.current = null;
       }
     };
-  }, []); // Empty dependency array to run only once on mount
+  }, []);
+
+  // Function to mark messages as read
+  const markMessageAsRead = (messageId) => {
+    if (socketRef.current && isConnected) {
+      // Add to visible messages
+      visibleMessagesRef.current.add(messageId);
+
+      // Send read status to server (only send unique IDs)
+      socketRef.current.emit('message:read', {
+        messageIds: Array.from(visibleMessagesRef.current),
+      });
+    }
+  };
+
+  // Batch mark messages as read when chat is opened
+  useEffect(() => {
+    if (isOpen && messages.length > 0 && socketRef.current && isConnected) {
+      const messageIds = messages.map((msg) => msg._id);
+
+      // Add all to visible messages set
+      messageIds.forEach((id) => visibleMessagesRef.current.add(id));
+
+      // Notify server
+      socketRef.current.emit('message:read', {
+        messageIds: Array.from(visibleMessagesRef.current),
+      });
+
+      // Reset local unread count
+      setUnreadCount(0);
+    }
+  }, [isOpen, messages, isConnected]);
 
   // Load messages when chat opens
   useEffect(() => {
@@ -137,7 +193,7 @@ export default function ChatButton() {
 
       setLoading(true);
       setError('');
-      setUnreadCount(0); // Reset unread count when opening the chat
+      setUnreadCount(0);
 
       axios
         .get('/api/messages', {
@@ -152,6 +208,15 @@ export default function ChatButton() {
               (a, b) => new Date(a.createdAt) - new Date(b.createdAt),
             );
             setMessages(sortedMessages);
+
+            // Mark all loaded messages as read
+            const messageIds = sortedMessages.map((msg) => msg._id);
+            if (socketRef.current && isConnected) {
+              messageIds.forEach((id) => visibleMessagesRef.current.add(id));
+              socketRef.current.emit('message:read', {
+                messageIds: Array.from(visibleMessagesRef.current),
+              });
+            }
           } else {
             console.error('Expected array of messages but got:', res.data);
             setMessages([]);
@@ -169,7 +234,7 @@ export default function ChatButton() {
           setLoading(false);
         });
     }
-  }, [isOpen]);
+  }, [isOpen, isConnected]);
 
   // Message scrolling
   useEffect(() => {
@@ -335,7 +400,49 @@ export default function ChatButton() {
                 <p className="text-gray-500">No messages yet</p>
               </div>
             ) : (
-              messages.map((msg) => (
+              // User list with unread counts
+              <div className="mb-4 border-b pb-2">
+                <h4 className="text-xs font-semibold text-gray-500 mb-2">
+                  TEAM MEMBERS
+                </h4>
+                <div className="space-y-1">
+                  {onlineUsers.map((user) => {
+                    const unreadFromUser = userUnreadCounts[user.userId] || 0;
+                    return (
+                      <div
+                        key={user.userId}
+                        className="flex justify-between items-center p-1 rounded hover:bg-gray-100"
+                      >
+                        <div className="flex items-center gap-2">
+                          <div className="relative">
+                            <div className="w-8 h-8 rounded-full bg-blue-600 flex items-center justify-center text-white">
+                              {user.username.substring(0, 2).toUpperCase()}
+                            </div>
+                            <div className="absolute -bottom-1 -right-1 w-3 h-3 bg-green-500 rounded-full border-2 border-white"></div>
+                          </div>
+                          <span className="text-sm font-medium">
+                            {user.username}
+                          </span>
+                        </div>
+                        {unreadFromUser > 0 && (
+                          <span className="bg-red-500 text-white text-xs font-bold rounded-full h-5 w-5 flex items-center justify-center">
+                            {unreadFromUser}
+                          </span>
+                        )}
+                      </div>
+                    );
+                  })}
+                </div>
+              </div>
+            )}
+
+            {messages.map((msg) => {
+              // Mark message as read when it's rendered
+              if (!msg.isCurrentUser && msg._id) {
+                markMessageAsRead(msg._id);
+              }
+
+              return (
                 <div
                   key={msg._id}
                   className={`flex ${
@@ -402,8 +509,8 @@ export default function ChatButton() {
                     </div>
                   </div>
                 </div>
-              ))
-            )}
+              );
+            })}
             <div ref={messagesEndRef} />
           </div>
 
