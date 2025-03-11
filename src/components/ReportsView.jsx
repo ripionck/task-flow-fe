@@ -12,7 +12,7 @@ import {
   XAxis,
   YAxis,
 } from 'recharts';
-import { PageHeader } from './PageHeader';
+import PageHeader from './PageHeader';
 
 const metrics = [
   {

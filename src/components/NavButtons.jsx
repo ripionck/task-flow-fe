@@ -1,7 +1,7 @@
 import { Plus } from 'lucide-react';
-import { SearchIcon } from './SearchIcon';
+import SearchIcon from './SearchIcon';
 
-export function NavButtons({ onNewTask, onNewBoard }) {
+function NavButtons({ onNewTask, onNewBoard }) {
   return (
     <div className="flex items-center gap-4">
       <div className="relative">
@@ -33,3 +33,4 @@ export function NavButtons({ onNewTask, onNewBoard }) {
     </div>
   );
 }
+export default NavButtons;

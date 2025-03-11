@@ -2,7 +2,6 @@ import {
   Calendar,
   ChevronLeft,
   Filter,
-  MoreHorizontal,
   Plus,
   Share2,
   Star,
@@ -10,8 +9,11 @@ import {
   Users,
 } from 'lucide-react';
 import { useState } from 'react';
+import BoardColumn from './BoardColumn';
+import TaskDeleteModal from './TaskDeleteModal';
+import TaskEditModal from './TaskEditModal';
 
-// Sample board data
+// Full board data with columns
 const boardData = {
   id: 1,
   title: 'Website Redesign',
@@ -35,7 +37,10 @@ const boardData = {
             'Design initial wireframes for homepage and product pages',
           tag: 'Design',
           tagColor: 'bg-blue-100 text-blue-700',
-          dueDate: 'Oct 15',
+          dueDate: '2023-10-15',
+          dueIn: 'Oct 15',
+          status: 'todo',
+          priority: 'high',
           assignees: ['JD', 'AM'],
           attachments: 2,
           comments: 3,
@@ -46,7 +51,10 @@ const boardData = {
           description: 'Review existing content and identify gaps',
           tag: 'Content',
           tagColor: 'bg-yellow-100 text-yellow-700',
-          dueDate: 'Oct 18',
+          dueDate: '2023-10-18',
+          dueIn: 'Oct 18',
+          status: 'todo',
+          priority: 'medium',
           assignees: ['SK'],
           attachments: 1,
           comments: 0,
@@ -64,7 +72,10 @@ const boardData = {
           description: 'Create a consistent design system for the website',
           tag: 'Design',
           tagColor: 'bg-blue-100 text-blue-700',
-          dueDate: 'Oct 12',
+          dueDate: '2023-10-12',
+          dueIn: 'Oct 12',
+          status: 'inProgress',
+          priority: 'medium',
           assignees: ['AM'],
           attachments: 4,
           comments: 7,
@@ -82,7 +93,10 @@ const boardData = {
           description: 'Interactive prototype for homepage',
           tag: 'Development',
           tagColor: 'bg-purple-100 text-purple-700',
-          dueDate: 'Oct 10',
+          dueDate: '2023-10-10',
+          dueIn: 'Oct 10',
+          status: 'review',
+          priority: 'high',
           assignees: ['JD', 'SK'],
           attachments: 0,
           comments: 5,
@@ -101,7 +115,10 @@ const boardData = {
             'Research competitor websites and identify opportunities',
           tag: 'Research',
           tagColor: 'bg-green-100 text-green-700',
-          dueDate: 'Completed',
+          dueDate: '2023-10-05',
+          dueIn: 'Completed',
+          status: 'done',
+          priority: 'medium',
           assignees: ['SK'],
           attachments: 3,
           comments: 2,
@@ -111,123 +128,35 @@ const boardData = {
   ],
 };
 
-function TaskCard({ task }) {
-  return (
-    <div className="bg-white p-4 rounded-lg shadow-sm hover:shadow-md transition-shadow cursor-pointer mb-3">
-      <div className="flex justify-between items-start mb-2">
-        <span className={`text-xs px-2 py-1 rounded-full ${task.tagColor}`}>
-          {task.tag}
-        </span>
-        <button className="text-gray-400 hover:text-gray-600">
-          <MoreHorizontal className="h-4 w-4" />
-        </button>
-      </div>
-      <h4 className="font-medium mb-1">{task.title}</h4>
-      <p className="text-sm text-gray-600 mb-3 line-clamp-2">
-        {task.description}
-      </p>
-
-      <div className="flex justify-between items-center">
-        <div className="flex -space-x-2">
-          {task.assignees.map((initials, i) => (
-            <div
-              key={i}
-              className="w-7 h-7 rounded-full bg-blue-600 flex items-center justify-center text-white text-xs border-2 border-white"
-            >
-              {initials}
-            </div>
-          ))}
-        </div>
-
-        <div className="flex items-center gap-3 text-gray-500 text-xs">
-          {task.attachments > 0 && (
-            <span className="flex items-center">
-              <svg
-                className="w-4 h-4 mr-1"
-                fill="none"
-                stroke="currentColor"
-                viewBox="0 0 24 24"
-                xmlns="http://www.w3.org/2000/svg"
-              >
-                <path
-                  strokeLinecap="round"
-                  strokeLinejoin="round"
-                  strokeWidth="2"
-                  d="M15.172 7l-6.586 6.586a2 2 0 102.828 2.828l6.414-6.586a4 4 0 00-5.656-5.656l-6.415 6.585a6 6 0 108.486 8.486L20.5 13"
-                ></path>
-              </svg>
-              {task.attachments}
-            </span>
-          )}
-
-          {task.comments > 0 && (
-            <span className="flex items-center">
-              <svg
-                className="w-4 h-4 mr-1"
-                fill="none"
-                stroke="currentColor"
-                viewBox="0 0 24 24"
-                xmlns="http://www.w3.org/2000/svg"
-              >
-                <path
-                  strokeLinecap="round"
-                  strokeLinejoin="round"
-                  strokeWidth="2"
-                  d="M8 12h.01M12 12h.01M16 12h.01M21 12c0 4.418-4.03 8-9 8a9.863 9.863 0 01-4.255-.949L3 20l1.395-3.72C3.512 15.042 3 13.574 3 12c0-4.418 4.03-8 9-8s9 3.582 9 8z"
-                ></path>
-              </svg>
-              {task.comments}
-            </span>
-          )}
-
-          <span className="text-xs">{task.dueDate}</span>
-        </div>
-      </div>
-    </div>
-  );
-}
-
-function BoardColumn({ column, onAddTask }) {
-  return (
-    <div className="min-w-[280px] w-[280px] flex-shrink-0">
-      <div className="flex items-center justify-between mb-3">
-        <div className="flex items-center gap-2">
-          <div
-            className="w-3 h-3 rounded-full"
-            style={{ backgroundColor: column.color }}
-          ></div>
-          <h3 className="font-medium">{column.name}</h3>
-          <span className="text-xs text-gray-500 bg-gray-100 px-2 py-0.5 rounded-full">
-            {column.tasks.length}
-          </span>
-        </div>
-        <button className="text-gray-400 hover:text-gray-600">
-          <MoreHorizontal className="h-4 w-4" />
-        </button>
-      </div>
-
-      <div className="space-y-3">
-        {column.tasks.map((task) => (
-          <TaskCard key={task.id} task={task} />
-        ))}
-
-        <button
-          onClick={() => onAddTask(column.id)}
-          className="w-full py-2 border border-dashed border-gray-300 rounded-lg text-gray-500 hover:text-gray-700 hover:border-gray-400 flex items-center justify-center"
-        >
-          <Plus className="h-4 w-4 mr-2" />
-          Add Task
-        </button>
-      </div>
-    </div>
-  );
-}
-
-export default function BoardDetailView({ onNewTask }) {
+const BoardDetailView = ({ onNewTask }) => {
   const [showFilters, setShowFilters] = useState(false);
+  const [taskToEdit, setTaskToEdit] = useState(null);
+  const [taskToDelete, setTaskToDelete] = useState(null);
+  const [isEditModalOpen, setIsEditModalOpen] = useState(false);
+  const [isDeleteModalOpen, setIsDeleteModalOpen] = useState(false);
 
   const handleAddTask = (columnId) => {
     if (onNewTask) onNewTask();
+  };
+
+  const handleEditTask = (task) => {
+    setTaskToEdit(task);
+    setIsEditModalOpen(true);
+  };
+
+  const handleDeleteTask = (task) => {
+    setTaskToDelete(task);
+    setIsDeleteModalOpen(true);
+  };
+
+  const handleUpdateTaskSubmit = (updatedTask) => {
+    console.log('Task updated:', updatedTask);
+    setIsEditModalOpen(false);
+  };
+
+  const handleDeleteTaskConfirm = (taskId) => {
+    console.log('Task deleted:', taskId);
+    setIsDeleteModalOpen(false);
   };
 
   return (
@@ -252,7 +181,6 @@ export default function BoardDetailView({ onNewTask }) {
             />
           </button>
         </div>
-
         <div className="flex justify-between items-center">
           <div className="flex items-center gap-4">
             <div className="flex -space-x-2">
@@ -268,13 +196,11 @@ export default function BoardDetailView({ onNewTask }) {
                 <Plus className="h-4 w-4" />
               </button>
             </div>
-
             <button className="flex items-center gap-1 text-gray-600 hover:text-gray-800">
               <Share2 className="h-4 w-4" />
               <span className="text-sm">Share</span>
             </button>
           </div>
-
           <div className="flex items-center gap-3">
             <button
               onClick={() => setShowFilters(!showFilters)}
@@ -283,7 +209,6 @@ export default function BoardDetailView({ onNewTask }) {
               <Filter className="h-4 w-4" />
               Filters
             </button>
-
             <button
               onClick={onNewTask}
               className="flex items-center gap-2 px-3 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700"
@@ -294,8 +219,7 @@ export default function BoardDetailView({ onNewTask }) {
           </div>
         </div>
       </div>
-
-      {/* Filter Panel (conditionally rendered) */}
+      {/* Filter Panel */}
       {showFilters && (
         <div className="bg-white border-b p-4">
           <div className="flex items-center gap-4">
@@ -313,7 +237,6 @@ export default function BoardDetailView({ onNewTask }) {
                 </select>
               </div>
             </div>
-
             <div>
               <label className="block text-xs text-gray-500 mb-1">
                 Due Date
@@ -328,7 +251,6 @@ export default function BoardDetailView({ onNewTask }) {
                 </select>
               </div>
             </div>
-
             <div>
               <label className="block text-xs text-gray-500 mb-1">Tags</label>
               <div className="flex items-center gap-2 border rounded-lg p-2">
@@ -342,14 +264,12 @@ export default function BoardDetailView({ onNewTask }) {
                 </select>
               </div>
             </div>
-
             <button className="text-sm text-blue-600 hover:text-blue-700 mt-5">
               Clear Filters
             </button>
           </div>
         </div>
       )}
-
       {/* Board Content */}
       <div className="flex-1 overflow-x-auto p-6">
         <div className="flex gap-6 h-full">
@@ -358,18 +278,27 @@ export default function BoardDetailView({ onNewTask }) {
               key={column.id}
               column={column}
               onAddTask={handleAddTask}
+              onEditTask={handleEditTask}
+              onDeleteTask={handleDeleteTask}
             />
           ))}
-
-          {/* Add Column Button */}
-          <div className="min-w-[280px] w-[280px] flex-shrink-0">
-            <button className="w-full h-12 border border-dashed border-gray-300 rounded-lg text-gray-500 hover:text-gray-700 hover:border-gray-400 flex items-center justify-center">
-              <Plus className="h-4 w-4 mr-2" />
-              Add Column
-            </button>
-          </div>
         </div>
       </div>
+      {/* Modals */}
+      <TaskEditModal
+        isOpen={isEditModalOpen}
+        onClose={() => setIsEditModalOpen(false)}
+        onSubmit={handleUpdateTaskSubmit}
+        task={taskToEdit}
+      />
+      <TaskDeleteModal
+        isOpen={isDeleteModalOpen}
+        onClose={() => setIsDeleteModalOpen(false)}
+        onConfirm={handleDeleteTaskConfirm}
+        task={taskToDelete}
+      />
     </div>
   );
-}
+};
+
+export default BoardDetailView;

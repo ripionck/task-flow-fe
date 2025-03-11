@@ -9,7 +9,7 @@ import {
   X,
 } from 'lucide-react';
 import { useState } from 'react';
-import { PageHeader } from './PageHeader';
+import PageHeader from './PageHeader';
 
 const stats = [
   {

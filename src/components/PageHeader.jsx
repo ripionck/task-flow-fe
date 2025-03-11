@@ -1,4 +1,4 @@
-export function PageHeader({ title, subtitle, children }) {
+function PageHeader({ title, subtitle, children }) {
   return (
     <div className="flex justify-between items-start p-6 border-b border-gray-200 bg-white">
       <div>
@@ -9,3 +9,5 @@ export function PageHeader({ title, subtitle, children }) {
     </div>
   );
 }
+
+export default PageHeader;

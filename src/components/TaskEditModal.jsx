@@ -1,7 +1,7 @@
 import { Calendar, X } from 'lucide-react';
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 
-function NewTaskModal({ isOpen, onClose, onSubmit }) {
+export default function TaskEditModal({ isOpen, onClose, onSubmit, task }) {
   const [taskData, setTaskData] = useState({
     title: '',
     description: '',
@@ -15,20 +15,25 @@ function NewTaskModal({ isOpen, onClose, onSubmit }) {
   const [assigneeInput, setAssigneeInput] = useState('');
   const [tagInput, setTagInput] = useState('');
 
+  // Initialize form with task data when modal opens or task changes
+  useEffect(() => {
+    if (task) {
+      setTaskData({
+        title: task.title || '',
+        description: task.description || '',
+        dueDate: task.dueDate || '',
+        status: task.status || 'todo',
+        priority: task.priority || 'medium',
+        assignees: task.assignees || [],
+        tags: task.tag ? [task.tag] : [],
+      });
+    }
+  }, [task, isOpen]);
+
   const handleSubmit = (e) => {
     e.preventDefault();
-    onSubmit(taskData);
+    onSubmit({ ...task, ...taskData });
     onClose();
-    // Reset form after submission
-    setTaskData({
-      title: '',
-      description: '',
-      dueDate: '',
-      status: 'todo',
-      priority: 'medium',
-      assignees: [],
-      tags: [],
-    });
   };
 
   const addAssignee = () => {
@@ -57,7 +62,7 @@ function NewTaskModal({ isOpen, onClose, onSubmit }) {
     <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
       <div className="bg-white rounded-lg w-full max-w-md p-6 max-h-[90vh] overflow-y-auto">
         <div className="flex justify-between items-center mb-6">
-          <h2 className="text-xl font-semibold">Create New Task</h2>
+          <h2 className="text-xl font-semibold">Edit Task</h2>
           <button
             onClick={onClose}
             className="p-2 hover:bg-gray-100 rounded-full"
@@ -134,7 +139,6 @@ function NewTaskModal({ isOpen, onClose, onSubmit }) {
               >
                 <option value="todo">To Do</option>
                 <option value="inProgress">In Progress</option>
-                <option value="review">Review</option>
                 <option value="done">Done</option>
               </select>
             </div>
@@ -266,7 +270,7 @@ function NewTaskModal({ isOpen, onClose, onSubmit }) {
               type="submit"
               className="px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700"
             >
-              Create Task
+              Save Changes
             </button>
           </div>
         </form>
@@ -274,4 +278,3 @@ function NewTaskModal({ isOpen, onClose, onSubmit }) {
     </div>
   );
 }
-export default NewTaskModal;

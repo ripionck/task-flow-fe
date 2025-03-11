@@ -11,7 +11,7 @@ const defaultBoard = {
   teamNames: [],
 };
 
-export default function EditBoardModal({ isOpen, onClose, board, onSave }) {
+function BoardEditModal({ isOpen, onClose, board, onSave }) {
   const [boardData, setBoardData] = useState(defaultBoard);
   const [tagInput, setTagInput] = useState('');
 
@@ -264,3 +264,5 @@ export default function EditBoardModal({ isOpen, onClose, board, onSave }) {
     </div>
   );
 }
+
+export default BoardEditModal;
