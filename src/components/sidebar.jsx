@@ -9,6 +9,7 @@ import {
   Users,
 } from 'lucide-react';
 import { useEffect, useRef, useState } from 'react';
+import { useNavigate } from 'react-router-dom';
 
 const navItems = [
   { id: 'dashboard', icon: LayoutDashboard, label: 'Dashboard' },
@@ -27,9 +28,58 @@ const navItems = [
 
 export default function Sidebar({ currentView, onViewChange }) {
   const [isProfileMenuOpen, setIsProfileMenuOpen] = useState(false);
+  const [user, setUser] = useState(null);
+  const [loading, setLoading] = useState(true);
   const profileMenuRef = useRef(null);
+  const navigate = useNavigate();
 
-  // Close profile menu when clicking outside
+  useEffect(() => {
+    const fetchUserProfile = async () => {
+      try {
+        const token = localStorage.getItem('token');
+        if (!token) {
+          navigate('/login');
+          return;
+        }
+
+        const response = await fetch('http://localhost:5000/api/auth/me', {
+          headers: {
+            Authorization: `Bearer ${token}`,
+            'Content-Type': 'application/json',
+            Accept: 'application/json',
+          },
+        });
+
+        if (!response.ok) {
+          const text = await response.text();
+          throw new Error(
+            `HTTP error! status: ${response.status}, response: ${text}`,
+          );
+        }
+
+        const contentType = response.headers.get('content-type');
+        if (!contentType || !contentType.includes('application/json')) {
+          throw new Error('Invalid response format - expected JSON');
+        }
+
+        const data = await response.json();
+        if (!data.success) {
+          throw new Error(data.message || 'Failed to fetch user profile');
+        }
+        setUser(data.user);
+      } catch (error) {
+        console.error('Error fetching user profile:', error);
+        localStorage.removeItem('token');
+        navigate('/login');
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    fetchUserProfile();
+  }, [navigate]);
+
+  // Rest of the component remains the same...
   useEffect(() => {
     function handleClickOutside(event) {
       if (
@@ -39,25 +89,23 @@ export default function Sidebar({ currentView, onViewChange }) {
         setIsProfileMenuOpen(false);
       }
     }
-
     document.addEventListener('mousedown', handleClickOutside);
-    return () => {
-      document.removeEventListener('mousedown', handleClickOutside);
-    };
+    return () => document.removeEventListener('mousedown', handleClickOutside);
   }, []);
 
   const handleLogout = () => {
-    console.log('Logging out...');
-    // Implement your logout logic here
-    setIsProfileMenuOpen(false);
+    localStorage.removeItem('token');
+    navigate('/login');
   };
+
+  if (loading) return <div>Loading...</div>;
 
   return (
     <aside className="w-60 border-r border-gray-200 bg-white flex flex-col">
+      {/* Rest of the JSX remains the same... */}
       <div className="p-4 border-b border-gray-200">
         <h1 className="text-xl font-bold text-blue-600">TaskFlow</h1>
       </div>
-
       <nav className="flex-1 p-2">
         <ul className="space-y-1">
           {navItems.map((item) => (
@@ -82,7 +130,6 @@ export default function Sidebar({ currentView, onViewChange }) {
           ))}
         </ul>
       </nav>
-
       <div className="p-4 border-t border-gray-200" ref={profileMenuRef}>
         <div
           className={`flex items-center gap-3 px-3 py-2 rounded-lg cursor-pointer ${
@@ -91,15 +138,13 @@ export default function Sidebar({ currentView, onViewChange }) {
           onClick={() => setIsProfileMenuOpen(!isProfileMenuOpen)}
         >
           <div className="w-8 h-8 bg-blue-600 rounded-full flex items-center justify-center text-white text-sm">
-            JD
+            {user?.initials}
           </div>
           <div className="flex-1">
-            <div className="text-sm font-medium">John Doe</div>
-            <div className="text-xs text-gray-500">john@example.com</div>
+            <div className="text-sm font-medium">{user?.name || 'User'}</div>
+            <div className="text-xs text-gray-500">{user?.email}</div>
           </div>
         </div>
-
-        {/* Logout Button */}
         {isProfileMenuOpen && (
           <div className="mt-2 pl-2">
             <button

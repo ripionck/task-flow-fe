@@ -3,7 +3,7 @@ import PageHeader from './PageHeader';
 
 export default function SettingsView() {
   const [userData, setUserData] = useState({
-    fullName: '',
+    name: '',
     email: '',
     settings: {
       emailNotifications: true,
@@ -12,8 +12,10 @@ export default function SettingsView() {
       accentColor: '#3b82f6',
     },
     avatar: '',
+    _id: '',
   });
   const [isLoading, setIsLoading] = useState(true);
+  const [isSaving, setIsSaving] = useState(false);
   const [error, setError] = useState('');
   const [successMessage, setSuccessMessage] = useState('');
 
@@ -21,22 +23,31 @@ export default function SettingsView() {
     const fetchUserData = async () => {
       try {
         const token = localStorage.getItem('token');
+        if (!token) throw new Error('No authentication token found');
+
         const response = await fetch('http://localhost:5000/api/auth/me', {
           headers: {
             Authorization: `Bearer ${token}`,
+            'Content-Type': 'application/json',
+            Accept: 'application/json',
           },
         });
 
-        if (!response.ok) throw new Error('Failed to fetch user data');
+        if (!response.ok) {
+          const errorData = await response.json();
+          throw new Error(errorData.message || 'Failed to fetch user data');
+        }
 
-        const { data } = await response.json();
+        const data = await response.json();
+        const user = data.user || data;
+
         setUserData({
-          ...data,
-          settings: data.settings || {
-            emailNotifications: true,
-            desktopNotifications: true,
-            themeMode: 'system',
-            accentColor: '#3b82f6',
+          ...user,
+          settings: {
+            emailNotifications: user.settings?.emailNotifications ?? true,
+            desktopNotifications: user.settings?.desktopNotifications ?? true,
+            themeMode: user.settings?.themeMode || 'system',
+            accentColor: user.settings?.accentColor || '#3b82f6',
           },
         });
       } catch (error) {
@@ -49,12 +60,12 @@ export default function SettingsView() {
     fetchUserData();
   }, []);
 
-  const getInitials = (fullName) => {
-    if (!fullName) return 'US';
-    const names = fullName.split(' ');
+  const getInitials = (name) => {
+    if (!name) return 'US';
+    const names = name.split(' ');
     return names
       .slice(0, 2)
-      .map((name) => name[0].toUpperCase())
+      .map((n) => n[0]?.toUpperCase() || '')
       .join('');
   };
 
@@ -62,11 +73,20 @@ export default function SettingsView() {
     e.preventDefault();
     setError('');
     setSuccessMessage('');
+    setIsSaving(true);
 
     try {
+      // Basic input validation
+      if (!userData.name.trim()) throw new Error('Name is required');
+      if (!userData.email || !/\S+@\S+\.\S+/.test(userData.email)) {
+        throw new Error('Valid email is required');
+      }
+
       const token = localStorage.getItem('token');
+      if (!token) throw new Error('No authentication token found');
+
       const response = await fetch(
-        `http://localhost:5000/api/users/${userData._id}`,
+        `http://localhost:5000/api/users/${userData.id}`,
         {
           method: 'PUT',
           headers: {
@@ -74,7 +94,7 @@ export default function SettingsView() {
             Authorization: `Bearer ${token}`,
           },
           body: JSON.stringify({
-            fullName: userData.fullName,
+            name: userData.name,
             email: userData.email,
             settings: userData.settings,
           }),
@@ -87,11 +107,17 @@ export default function SettingsView() {
         throw new Error(data.message || 'Failed to update settings');
       }
 
-      setUserData(data.data);
+      // Update local state with the response data
+      setUserData((prev) => ({
+        ...prev,
+        ...data.user,
+      }));
       setSuccessMessage('Settings updated successfully!');
       setTimeout(() => setSuccessMessage(''), 3000);
     } catch (error) {
       setError(error.message);
+    } finally {
+      setIsSaving(false);
     }
   };
 
@@ -118,7 +144,6 @@ export default function SettingsView() {
             </div>
           )}
 
-          {/* Profile Settings */}
           <section className="bg-white p-6 rounded-lg border border-gray-200">
             <h2 className="text-lg font-medium mb-6">Profile Settings</h2>
             <div className="flex items-center gap-4 mb-6">
@@ -130,7 +155,7 @@ export default function SettingsView() {
                 />
               ) : (
                 <div className="w-16 h-16 bg-blue-600 rounded-full flex items-center justify-center text-white text-xl">
-                  {getInitials(userData.fullName)}
+                  {getInitials(userData.name)}
                 </div>
               )}
               <button
@@ -148,14 +173,15 @@ export default function SettingsView() {
                 </label>
                 <input
                   type="text"
-                  value={userData.fullName}
+                  value={userData.name || ''}
                   onChange={(e) =>
                     setUserData((prev) => ({
                       ...prev,
-                      fullName: e.target.value,
+                      name: e.target.value,
                     }))
                   }
                   className="w-full px-3 py-2 border border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
+                  disabled={isSaving}
                 />
               </div>
               <div>
@@ -164,7 +190,7 @@ export default function SettingsView() {
                 </label>
                 <input
                   type="email"
-                  value={userData.email}
+                  value={userData.email || ''}
                   onChange={(e) =>
                     setUserData((prev) => ({
                       ...prev,
@@ -172,6 +198,7 @@ export default function SettingsView() {
                     }))
                   }
                   className="w-full px-3 py-2 border border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
+                  disabled={isSaving}
                 />
               </div>
             </div>
@@ -202,6 +229,7 @@ export default function SettingsView() {
                       }))
                     }
                     className="sr-only peer"
+                    disabled={isSaving}
                   />
                   <div className="w-11 h-6 bg-gray-200 peer-focus:outline-none peer-focus:ring-4 peer-focus:ring-blue-300 rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-blue-600"></div>
                 </label>
@@ -227,6 +255,7 @@ export default function SettingsView() {
                       }))
                     }
                     className="sr-only peer"
+                    disabled={isSaving}
                   />
                   <div className="w-11 h-6 bg-gray-200 peer-focus:outline-none peer-focus:ring-4 peer-focus:ring-blue-300 rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-blue-600"></div>
                 </label>
@@ -254,6 +283,7 @@ export default function SettingsView() {
                     }))
                   }
                   className="w-full px-3 py-2 border border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
+                  disabled={isSaving}
                 >
                   <option value="light">Light</option>
                   <option value="dark">Dark</option>
@@ -282,8 +312,9 @@ export default function SettingsView() {
                         userData.settings.accentColor === color
                           ? 'border-blue-600'
                           : 'border-transparent'
-                      }`}
+                      } ${isSaving ? 'opacity-50 cursor-not-allowed' : ''}`}
                       style={{ backgroundColor: color }}
+                      disabled={isSaving}
                     />
                   ))}
                 </div>
@@ -294,9 +325,12 @@ export default function SettingsView() {
           <div className="flex justify-end">
             <button
               type="submit"
-              className="px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700"
+              className={`px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 ${
+                isSaving ? 'opacity-50 cursor-not-allowed' : ''
+              }`}
+              disabled={isSaving}
             >
-              Save Changes
+              {isSaving ? 'Saving...' : 'Save Changes'}
             </button>
           </div>
         </form>
