@@ -30,8 +30,8 @@ export default function Login() {
         throw new Error(data.message || 'Login failed');
       }
 
-      // Store the authentication token (assuming your API returns one)
       localStorage.setItem('token', data.token);
+      localStorage.setItem('userData', JSON.stringify(data.user));
 
       // Redirect to home page
       navigate('/');

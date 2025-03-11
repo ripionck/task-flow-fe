@@ -95,6 +95,7 @@ export default function Sidebar({ currentView, onViewChange }) {
 
   const handleLogout = () => {
     localStorage.removeItem('token');
+    localStorage.removeItem('userData');
     navigate('/login');
   };
 
