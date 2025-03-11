@@ -3,8 +3,9 @@ import { Link, useNavigate } from 'react-router-dom';
 
 export default function Register() {
   const [formData, setFormData] = useState({
-    fullName: '',
+    name: '',
     email: '',
+    role: '',
     password: '',
   });
   const [error, setError] = useState('');
@@ -23,8 +24,9 @@ export default function Register() {
           'Content-Type': 'application/json',
         },
         body: JSON.stringify({
+          name: formData.name,
           email: formData.email,
-          fullName: formData.fullName,
+          role: formData.role,
           password: formData.password,
         }),
       });
@@ -54,15 +56,15 @@ export default function Register() {
             </div>
           )}
           <div className="mb-4">
-            <label className="block text-gray-700 mb-2" htmlFor="fullName">
+            <label className="block text-gray-700 mb-2" htmlFor="name">
               Full Name
             </label>
             <input
               type="text"
-              id="fullName"
-              value={formData.fullName}
+              id="name"
+              value={formData.name}
               onChange={(e) =>
-                setFormData({ ...formData, fullName: e.target.value })
+                setFormData({ ...formData, name: e.target.value })
               }
               className="w-full px-3 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
               required
@@ -81,6 +83,22 @@ export default function Register() {
               }
               className="w-full px-3 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
               required
+            />
+          </div>
+          <div className="mb-4">
+            <label className="block text-gray-700 mb-2" htmlFor="role">
+              Role
+            </label>
+            <input
+              type="text"
+              id="role"
+              value={formData.role}
+              onChange={(e) =>
+                setFormData({ ...formData, role: e.target.value })
+              }
+              className="w-full px-3 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
+              required
+              placeholder="E.g., Developer, Designer, Manager"
             />
           </div>
           <div className="mb-6">
@@ -108,6 +126,7 @@ export default function Register() {
           </button>
         </form>
 
+        {/* Rest of the component remains the same */}
         <div className="mt-6 flex items-center justify-between">
           <div className="text-sm">
             Already have an account?{' '}

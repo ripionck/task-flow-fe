@@ -8,155 +8,130 @@ import {
   Users,
   X,
 } from 'lucide-react';
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 import PageHeader from './PageHeader';
 
-const stats = [
-  {
-    label: 'Total Members',
-    value: '12',
-    icon: Users,
-    color: 'bg-blue-100 text-blue-600',
-  },
-  {
-    label: 'Active Projects',
-    value: '8',
-    icon: ClipboardList,
-    color: 'bg-green-100 text-green-600',
-  },
-  {
-    label: 'Tasks Completed',
-    value: '45',
-    icon: CheckSquare,
-    color: 'bg-purple-100 text-purple-600',
-  },
-];
-
-// All available users in the system
-const allUsers = [
-  {
-    id: 1,
-    name: 'John Doe',
-    email: 'john@example.com',
-    role: 'Project Manager',
-    initials: 'JD',
-    status: 'Active',
-    statusColor: 'bg-green-100 text-green-700',
-    isTeamMember: true,
-    isAdmin: true,
-  },
-  {
-    _id: 2,
-    name: 'Alice Martinez',
-    email: 'alice@example.com',
-    role: 'Lead Developer',
-    initials: 'AM',
-    status: 'Away',
-    statusColor: 'bg-yellow-100 text-yellow-700',
-    isTeamMember: true,
-    isAdmin: false,
-  },
-  {
-    id: 3,
-    name: 'Sarah Kim',
-    email: 'sarah@example.com',
-    role: 'UI/UX Designer',
-    initials: 'SK',
-    status: 'Active',
-    statusColor: 'bg-green-100 text-green-700',
-    isTeamMember: true,
-    isAdmin: false,
-  },
-  {
-    id: 4,
-    name: 'Robert Johnson',
-    email: 'robert@example.com',
-    role: 'Backend Developer',
-    initials: 'RJ',
-    status: 'Inactive',
-    statusColor: 'bg-gray-100 text-gray-700',
-    isTeamMember: false,
-    isAdmin: false,
-  },
-  {
-    id: 5,
-    name: 'Emily Davis',
-    email: 'emily@example.com',
-    role: 'Content Writer',
-    initials: 'ED',
-    status: 'Active',
-    statusColor: 'bg-green-100 text-green-700',
-    isTeamMember: false,
-    isAdmin: false,
-  },
-  {
-    id: 6,
-    name: 'Michael Brown',
-    email: 'michael@example.com',
-    role: 'QA Engineer',
-    initials: 'MB',
-    status: 'Active',
-    statusColor: 'bg-green-100 text-green-700',
-    isTeamMember: true,
-    isAdmin: false,
-  },
-  {
-    id: 7,
-    name: 'Lisa Thompson',
-    email: 'lisa@example.com',
-    role: 'Product Manager',
-    initials: 'LT',
-    status: 'Away',
-    statusColor: 'bg-yellow-100 text-yellow-700',
-    isTeamMember: false,
-    isAdmin: false,
-  },
-];
+const API_BASE = 'http://localhost:5000/api/users';
+const getAuthHeader = () => ({
+  Authorization: `Bearer ${localStorage.getItem('token')}`,
+});
 
 export default function TeamSpaceView() {
-  const [users, setUsers] = useState(allUsers);
+  const [users, setUsers] = useState([]);
   const [searchTerm, setSearchTerm] = useState('');
-  const [showAddUserModal, setShowAddUserModal] = useState(false);
+  const [showEditUserModal, setShowEditUserModal] = useState(false);
   const [selectedUser, setSelectedUser] = useState(null);
-  const [viewMode, setViewMode] = useState('team'); // "team" or "all"
+  const [viewMode, setViewMode] = useState('team');
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState('');
 
-  // Filter users based on search term and view mode
-  const filteredUsers = users.filter(
-    (user) =>
-      (user.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
-        user.email.toLowerCase().includes(searchTerm.toLowerCase()) ||
-        user.role.toLowerCase().includes(searchTerm.toLowerCase())) &&
-      (viewMode === 'all' || (viewMode === 'team' && user.isTeamMember)),
-  );
+  // Fetch users on mount
+  useEffect(() => {
+    const fetchUsers = async () => {
+      try {
+        const response = await fetch(API_BASE, {
+          headers: getAuthHeader(),
+        });
+        if (!response.ok) throw new Error('Failed to fetch users');
+        const data = await response.json();
+        setUsers(data.data);
+      } catch (err) {
+        setError(err.message);
+      } finally {
+        setLoading(false);
+      }
+    };
+    fetchUsers();
+  }, []);
 
-  const handleAddToTeam = (userId) => {
-    setUsers(
-      users.map((user) =>
-        user.id === userId ? { ...user, isTeamMember: true } : user,
-      ),
-    );
-  };
-
-  const handleRemoveFromTeam = (userId) => {
-    setUsers(
-      users.map((user) =>
-        user.id === userId ? { ...user, isTeamMember: false } : user,
-      ),
-    );
-  };
-
-  const handleUserActionClick = (user, action) => {
-    if (action === 'add') {
-      handleAddToTeam(user.id);
-    } else if (action === 'remove') {
-      handleRemoveFromTeam(user.id);
-    } else if (action === 'edit') {
-      setSelectedUser(user);
-      setShowAddUserModal(true);
+  // Add user to team
+  const handleAddToTeam = async (userId) => {
+    try {
+      const response = await fetch(`${API_BASE}/${userId}/add-member`, {
+        method: 'PUT',
+        headers: getAuthHeader(),
+      });
+      if (!response.ok) throw new Error('Failed to add member');
+      setUsers(
+        users.map((u) => (u._id === userId ? { ...u, isTeamMember: true } : u)),
+      );
+    } catch (err) {
+      setError(err.message);
     }
   };
 
-  const teamMemberCount = users.filter((user) => user.isTeamMember).length;
+  // Remove user from team
+  const handleRemoveFromTeam = async (userId) => {
+    try {
+      const response = await fetch(`${API_BASE}/${userId}/remove-member`, {
+        method: 'PUT',
+        headers: getAuthHeader(),
+      });
+      if (!response.ok) throw new Error('Failed to remove member');
+      setUsers(
+        users.map((u) =>
+          u._id === userId ? { ...u, isTeamMember: false } : u,
+        ),
+      );
+    } catch (err) {
+      setError(err.message);
+    }
+  };
+
+  // Update user
+  const handleUpdateUser = async (userData) => {
+    try {
+      const response = await fetch(`${API_BASE}/${selectedUser._id}`, {
+        method: 'PUT',
+        headers: {
+          'Content-Type': 'application/json',
+          ...getAuthHeader(),
+        },
+        body: JSON.stringify(userData),
+      });
+
+      if (!response.ok) throw new Error('Failed to update user');
+
+      const updatedUser = await response.json();
+      setUsers(users.map((u) => (u._id === updatedUser._id ? updatedUser : u)));
+      setShowEditUserModal(false);
+    } catch (err) {
+      setError(err.message);
+    }
+  };
+
+  // Filter users based on search term and view mode
+  const filteredUsers = users.filter((user) => {
+    const matchesSearch = ['name', 'email', 'role'].some((field) =>
+      user[field]?.toLowerCase().includes(searchTerm.toLowerCase()),
+    );
+    return matchesSearch && (viewMode === 'all' || user.isTeamMember);
+  });
+
+  // Stats data
+  const stats = [
+    {
+      label: 'Total Members',
+      value: users.filter((u) => u.isTeamMember).length,
+      icon: Users,
+      color: 'bg-blue-100 text-blue-600',
+    },
+    {
+      label: 'Active Projects',
+      value: '8',
+      icon: ClipboardList,
+      color: 'bg-green-100 text-green-600',
+    },
+    {
+      label: 'Tasks Completed',
+      value: '45',
+      icon: CheckSquare,
+      color: 'bg-purple-100 text-purple-600',
+    },
+  ];
+
+  if (loading) return <div>Loading...</div>;
+  if (error) return <div>Error: {error}</div>;
 
   return (
     <div>
@@ -187,9 +162,7 @@ export default function TeamSpaceView() {
                   <stat.icon className="h-5 w-5" />
                 </div>
                 <div>
-                  <div className="text-2xl font-semibold">
-                    {i === 0 ? teamMemberCount : stat.value}
-                  </div>
+                  <div className="text-2xl font-semibold">{stat.value}</div>
                   <div className="text-sm text-gray-600">{stat.label}</div>
                 </div>
               </div>
@@ -219,7 +192,10 @@ export default function TeamSpaceView() {
             </h2>
             <div className="text-sm text-gray-500">
               Showing {filteredUsers.length} of{' '}
-              {viewMode === 'team' ? teamMemberCount : users.length} users
+              {viewMode === 'team'
+                ? users.filter((u) => u.isTeamMember).length
+                : users.length}{' '}
+              users
             </div>
           </div>
 
@@ -231,7 +207,7 @@ export default function TeamSpaceView() {
             <div className="divide-y divide-gray-200">
               {filteredUsers.map((user) => (
                 <div
-                  key={user.id}
+                  key={user._id}
                   className="p-6 flex items-center justify-between"
                 >
                   <div className="flex items-center gap-4">
@@ -240,7 +216,10 @@ export default function TeamSpaceView() {
                         user.isAdmin ? 'ring-2 ring-yellow-400' : ''
                       }`}
                     >
-                      {user.initials}
+                      {user.name
+                        .split(' ')
+                        .map((n) => n[0])
+                        .join('')}
                     </div>
                     <div>
                       <div className="font-medium flex items-center gap-2">
@@ -257,16 +236,24 @@ export default function TeamSpaceView() {
                   </div>
 
                   <div className="flex items-center gap-4">
+                    {/* Status */}
                     <span
-                      className={`px-2 py-1 rounded-full text-xs ${user.statusColor}`}
+                      className={`px-2 py-1 rounded-full text-xs ${
+                        user.status === 'Active'
+                          ? 'bg-green-100 text-green-700'
+                          : user.status === 'Away'
+                          ? 'bg-yellow-100 text-yellow-700'
+                          : 'bg-red-100 text-red-700'
+                      }`}
                     >
                       {user.status}
                     </span>
 
+                    {/* Add/Remove Buttons */}
                     <div className="flex items-center gap-2">
                       {!user.isTeamMember ? (
                         <button
-                          onClick={() => handleUserActionClick(user, 'add')}
+                          onClick={() => handleAddToTeam(user._id)}
                           className="p-1.5 hover:bg-blue-50 text-blue-600 rounded flex items-center gap-1 text-sm"
                           title="Add to team"
                         >
@@ -275,18 +262,22 @@ export default function TeamSpaceView() {
                         </button>
                       ) : (
                         <button
-                          onClick={() => handleUserActionClick(user, 'remove')}
+                          onClick={() => handleRemoveFromTeam(user._id)}
                           className="p-1.5 hover:bg-red-50 text-red-600 rounded flex items-center gap-1 text-sm"
                           title="Remove from team"
-                          disabled={user.isAdmin} // Prevent removing admins
+                          disabled={user.isAdmin}
                         >
                           <UserMinus className="h-4 w-4" />
                           <span className="hidden sm:inline">Remove</span>
                         </button>
                       )}
 
+                      {/* Edit Button */}
                       <button
-                        onClick={() => handleUserActionClick(user, 'edit')}
+                        onClick={() => {
+                          setSelectedUser(user);
+                          setShowEditUserModal(true);
+                        }}
                         className="p-1.5 hover:bg-gray-100 text-gray-600 rounded"
                         title="Edit user"
                       >
@@ -301,107 +292,101 @@ export default function TeamSpaceView() {
         </section>
       </div>
 
-      {/* Add/Edit User Modal */}
-      {showAddUserModal && (
+      {/* Edit User Modal */}
+      {showEditUserModal && (
         <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
           <div className="bg-white rounded-lg w-full max-w-md p-6">
             <div className="flex justify-between items-center mb-6">
-              <h2 className="text-xl font-semibold">
-                {selectedUser ? 'Edit User' : 'Add New User'}
-              </h2>
+              <h2 className="text-xl font-semibold">Edit User</h2>
               <button
-                onClick={() => setShowAddUserModal(false)}
+                onClick={() => setShowEditUserModal(false)}
                 className="p-2 hover:bg-gray-100 rounded-full"
               >
                 <X className="h-5 w-5" />
               </button>
             </div>
 
-            <form className="space-y-4">
-              <div>
-                <label className="block text-sm font-medium text-gray-700 mb-1">
-                  Full Name
-                </label>
-                <input
-                  type="text"
-                  defaultValue={selectedUser?.name || ''}
-                  className="w-full px-3 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
-                  placeholder="Enter full name"
-                />
-              </div>
-
-              <div>
-                <label className="block text-sm font-medium text-gray-700 mb-1">
-                  Email
-                </label>
-                <input
-                  type="email"
-                  defaultValue={selectedUser?.email || ''}
-                  className="w-full px-3 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
-                  placeholder="Enter email address"
-                />
-              </div>
-
-              <div>
-                <label className="block text-sm font-medium text-gray-700 mb-1">
-                  Role
-                </label>
-                <input
-                  type="text"
-                  defaultValue={selectedUser?.role || ''}
-                  className="w-full px-3 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
-                  placeholder="Enter role (e.g. Developer, Designer)"
-                />
-              </div>
-
-              <div>
-                <label className="block text-sm font-medium text-gray-700 mb-1">
-                  Status
-                </label>
-                <select
-                  defaultValue={selectedUser?.status || 'Active'}
-                  className="w-full px-3 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
-                >
-                  <option value="Active">Active</option>
-                  <option value="Away">Away</option>
-                  <option value="Inactive">Inactive</option>
-                </select>
-              </div>
-
-              <div className="flex items-center">
-                <input
-                  type="checkbox"
-                  id="isTeamMember"
-                  defaultChecked={selectedUser?.isTeamMember || true}
-                  className="h-4 w-4 text-blue-600 focus:ring-blue-500 border-gray-300 rounded"
-                />
-                <label
-                  htmlFor="isTeamMember"
-                  className="ml-2 block text-sm text-gray-900"
-                >
-                  Add to team immediately
-                </label>
-              </div>
-
-              <div className="flex items-center">
-                <input
-                  type="checkbox"
-                  id="isAdmin"
-                  defaultChecked={selectedUser?.isAdmin || false}
-                  className="h-4 w-4 text-blue-600 focus:ring-blue-500 border-gray-300 rounded"
-                />
-                <label
-                  htmlFor="isAdmin"
-                  className="ml-2 block text-sm text-gray-900"
-                >
-                  Grant admin privileges
-                </label>
+            <form
+              onSubmit={(e) => {
+                e.preventDefault();
+                const formData = new FormData(e.target);
+                handleUpdateUser({
+                  name: formData.get('name'),
+                  email: formData.get('email'),
+                  role: formData.get('role'),
+                  status: formData.get('status'),
+                  isAdmin: formData.get('isAdmin') === 'on',
+                });
+              }}
+            >
+              <div className="space-y-4">
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 mb-1">
+                    Full Name
+                  </label>
+                  <input
+                    type="text"
+                    name="name"
+                    defaultValue={selectedUser?.name || ''}
+                    className="w-full px-3 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
+                    required
+                  />
+                </div>
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 mb-1">
+                    Email
+                  </label>
+                  <input
+                    type="email"
+                    name="email"
+                    defaultValue={selectedUser?.email || ''}
+                    className="w-full px-3 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
+                    required
+                  />
+                </div>
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 mb-1">
+                    Role
+                  </label>
+                  <input
+                    type="text"
+                    name="role"
+                    defaultValue={selectedUser?.role || ''}
+                    className="w-full px-3 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
+                    required
+                  />
+                </div>
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 mb-1">
+                    Status
+                  </label>
+                  <select
+                    name="status"
+                    defaultValue={selectedUser?.status || 'Active'}
+                    className="w-full px-3 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
+                  >
+                    <option value="Active">Active</option>
+                    <option value="Away">Away</option>
+                    <option value="Inactive">Inactive</option>
+                  </select>
+                </div>
+                <div className="flex items-center">
+                  <input
+                    type="checkbox"
+                    name="isAdmin"
+                    defaultChecked={selectedUser?.isAdmin || false}
+                    className="h-4 w-4 text-blue-600 focus:ring-blue-500 border-gray-300 rounded"
+                  />
+                  <label className="ml-2 block text-sm text-gray-900">
+                    Grant admin privileges
+                  </label>
+                </div>
               </div>
 
               <div className="flex justify-end gap-3 pt-4 border-t">
                 <button
                   type="button"
-                  onClick={() => setShowAddUserModal(false)}
+                  onClick={() => setShowEditUserModal(false)}
                   className="px-4 py-2 text-gray-700 hover:bg-gray-100 rounded-lg"
                 >
                   Cancel
@@ -410,7 +395,7 @@ export default function TeamSpaceView() {
                   type="submit"
                   className="px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700"
                 >
-                  {selectedUser ? 'Save Changes' : 'Add User'}
+                  Save Changes
                 </button>
               </div>
             </form>
