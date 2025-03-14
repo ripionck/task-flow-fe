@@ -1,4 +1,5 @@
 import { LogOut } from 'lucide-react';
+import PropTypes from 'prop-types';
 import { useNavigate } from 'react-router-dom';
 import useAuth from '../hooks/useAuth';
 
@@ -22,6 +23,14 @@ const LogoutButton = ({ className }) => {
       <span>Logout</span>
     </button>
   );
+};
+
+LogoutButton.propTypes = {
+  className: PropTypes.string,
+};
+
+LogoutButton.defaultProps = {
+  className: '',
 };
 
 export default LogoutButton;

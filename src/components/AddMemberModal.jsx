@@ -1,4 +1,5 @@
 import { Briefcase, Mail, Phone, User, Users, X } from 'lucide-react';
+import PropTypes from 'prop-types';
 import { useState } from 'react';
 
 const AddMemberModal = ({ isOpen, onClose, onSave }) => {
@@ -300,6 +301,16 @@ const AddMemberModal = ({ isOpen, onClose, onSave }) => {
       </div>
     </div>
   );
+};
+
+AddMemberModal.propTypes = {
+  isOpen: PropTypes.bool.isRequired,
+  onClose: PropTypes.func.isRequired,
+  onSave: PropTypes.func.isRequired,
+};
+
+AddMemberModal.defaultProps = {
+  isOpen: false,
 };
 
 export default AddMemberModal;

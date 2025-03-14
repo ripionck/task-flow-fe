@@ -1,4 +1,5 @@
 import { Calendar, X } from 'lucide-react';
+import PropTypes from 'prop-types';
 import { useState } from 'react';
 import { users } from '../data/dummy-data';
 
@@ -208,6 +209,17 @@ const AddTaskModal = ({ isOpen, onClose, onAdd, projectId }) => {
       </div>
     </div>
   );
+};
+
+AddTaskModal.propTypes = {
+  isOpen: PropTypes.bool.isRequired,
+  onClose: PropTypes.func.isRequired,
+  onAdd: PropTypes.func.isRequired,
+  projectId: PropTypes.oneOfType([PropTypes.string, PropTypes.number]),
+};
+
+AddTaskModal.defaultProps = {
+  projectId: 1,
 };
 
 export default AddTaskModal;

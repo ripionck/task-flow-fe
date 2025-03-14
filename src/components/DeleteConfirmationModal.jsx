@@ -1,4 +1,5 @@
 import { AlertTriangle, X } from 'lucide-react';
+import PropTypes from 'prop-types';
 
 const DeleteConfirmationModal = ({
   isOpen,
@@ -59,6 +60,20 @@ const DeleteConfirmationModal = ({
       </div>
     </div>
   );
+};
+
+DeleteConfirmationModal.propTypes = {
+  isOpen: PropTypes.bool.isRequired,
+  onClose: PropTypes.func.isRequired,
+  onConfirm: PropTypes.func.isRequired,
+  itemType: PropTypes.string,
+  itemName: PropTypes.string,
+};
+
+DeleteConfirmationModal.defaultProps = {
+  isOpen: false,
+  itemType: 'task',
+  itemName: '',
 };
 
 export default DeleteConfirmationModal;

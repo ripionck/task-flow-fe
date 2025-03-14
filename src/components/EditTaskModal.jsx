@@ -1,4 +1,5 @@
 import { Calendar, X } from 'lucide-react';
+import PropTypes from 'prop-types';
 import { useEffect, useState } from 'react';
 import { users } from '../data/dummy-data';
 
@@ -210,6 +211,40 @@ const EditTaskModal = ({ isOpen, onClose, onSave, task }) => {
       </div>
     </div>
   );
+};
+
+EditTaskModal.propTypes = {
+  isOpen: PropTypes.bool.isRequired,
+  onClose: PropTypes.func.isRequired,
+  onSave: PropTypes.func.isRequired,
+  task: PropTypes.shape({
+    id: PropTypes.oneOfType([PropTypes.string, PropTypes.number]),
+    title: PropTypes.string,
+    description: PropTypes.string,
+    status: PropTypes.string,
+    assignees: PropTypes.arrayOf(
+      PropTypes.oneOfType([PropTypes.string, PropTypes.number]),
+    ),
+    tags: PropTypes.arrayOf(PropTypes.string),
+    dueDate: PropTypes.string,
+    comments: PropTypes.number,
+    attachments: PropTypes.number,
+    project: PropTypes.oneOfType([PropTypes.string, PropTypes.number]),
+  }),
+};
+
+EditTaskModal.defaultProps = {
+  isOpen: false,
+  task: {
+    title: '',
+    description: '',
+    status: 'To Do',
+    assignees: [],
+    tags: [],
+    dueDate: '',
+    comments: 0,
+    attachments: 0,
+  },
 };
 
 export default EditTaskModal;

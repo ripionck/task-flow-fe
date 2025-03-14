@@ -1,4 +1,5 @@
 import { Image, Paperclip, Send, Smile, X } from 'lucide-react';
+import PropTypes from 'prop-types';
 import { useEffect, useRef, useState } from 'react';
 import useAuth from '../hooks/useAuth';
 import useChat from '../hooks/useChat';
@@ -168,6 +169,15 @@ const ChatPanel = ({ isOpen, onClose }) => {
       </form>
     </div>
   );
+};
+
+ChatPanel.propTypes = {
+  isOpen: PropTypes.bool.isRequired,
+  onClose: PropTypes.func.isRequired,
+};
+
+ChatPanel.defaultProps = {
+  isOpen: false,
 };
 
 export default ChatPanel;

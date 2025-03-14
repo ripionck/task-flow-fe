@@ -1,4 +1,5 @@
 import { X } from 'lucide-react';
+import PropTypes from 'prop-types';
 import { useEffect, useState } from 'react';
 
 const EditBoardModal = ({ isOpen, onClose, onSave, project }) => {
@@ -153,6 +154,29 @@ const EditBoardModal = ({ isOpen, onClose, onSave, project }) => {
       </div>
     </div>
   );
+};
+
+EditBoardModal.propTypes = {
+  isOpen: PropTypes.bool.isRequired,
+  onClose: PropTypes.func.isRequired,
+  onSave: PropTypes.func.isRequired,
+  project: PropTypes.shape({
+    id: PropTypes.oneOfType([PropTypes.string, PropTypes.number]),
+    name: PropTypes.string,
+    description: PropTypes.string,
+    tags: PropTypes.arrayOf(PropTypes.string),
+    dueDate: PropTypes.string,
+  }),
+};
+
+EditBoardModal.defaultProps = {
+  isOpen: false,
+  project: {
+    name: '',
+    description: '',
+    tags: [],
+    dueDate: '',
+  },
 };
 
 export default EditBoardModal;

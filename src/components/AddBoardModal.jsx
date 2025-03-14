@@ -1,4 +1,5 @@
 import { X } from 'lucide-react';
+import PropTypes from 'prop-types';
 import { useState } from 'react';
 
 const AddBoardModal = ({ isOpen, onClose, onAdd }) => {
@@ -130,6 +131,16 @@ const AddBoardModal = ({ isOpen, onClose, onAdd }) => {
       </div>
     </div>
   );
+};
+
+AddBoardModal.propTypes = {
+  isOpen: PropTypes.bool.isRequired,
+  onClose: PropTypes.func.isRequired,
+  onAdd: PropTypes.func.isRequired,
+};
+
+AddBoardModal.defaultProps = {
+  isOpen: false,
 };
 
 export default AddBoardModal;
