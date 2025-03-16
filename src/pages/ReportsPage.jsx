@@ -158,6 +158,45 @@ const ReportsPage = () => {
               </PieChart>
             </div>
           </div>
+
+          {/* New Team Performance Chart */}
+          <div className="p-4 bg-white rounded-lg shadow">
+            <h2 className="text-lg font-bold">Team Performance</h2>
+            <p className="text-sm text-gray-500">
+              Tasks completed and average completion time by team
+            </p>
+            <BarChart
+              width={800}
+              height={300}
+              data={teamPerformanceData}
+              margin={{ top: 20, right: 30, left: 20, bottom: 5 }}
+            >
+              <CartesianGrid strokeDasharray="3 3" />
+              <XAxis dataKey="name" />
+              <YAxis yAxisId="left" orientation="left" stroke="#3B82F6" />
+              <YAxis
+                yAxisId="right"
+                orientation="right"
+                stroke="#10B981"
+                tickFormatter={(value) => value.replace(' days', '')}
+              />
+              <Tooltip />
+              <Legend />
+              <Bar
+                yAxisId="left"
+                dataKey="tasksCompleted"
+                fill="#3B82F6"
+                name="Tasks Completed"
+              />
+              <Bar
+                yAxisId="right"
+                dataKey="avgCompletionTime"
+                fill="#10B981"
+                name="Avg. Completion Time (days)"
+                tickFormatter={(value) => value.replace(' days', '')}
+              />
+            </BarChart>
+          </div>
         </div>
       </div>
     </div>
